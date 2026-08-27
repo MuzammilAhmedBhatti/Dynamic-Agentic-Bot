@@ -1,0 +1,1 @@
+"""Authorized retrieval-augmented generation."""

@@ -6,7 +6,7 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True, slots=True)
 class AuthenticatedUser:
-    user_id: uuid.UUID
+    user_id: uuid.UUID | None
     external_subject: str
     identity_provider: str
 

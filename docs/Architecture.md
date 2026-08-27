@@ -1,8 +1,8 @@
 # Architecture
 
-Status: APPROVED BASELINE - Phase 1
+Status: APPROVED BASELINE - Milestone 2 implemented
 Last updated: 2026-08-27
-Decision authority: Phase 0 and Phase 1 approved by the project owner
+Decision authority: Phase 0, Phase 1, and Milestone 2 approved by the project owner
 
 ## 1. Architectural drivers
 
@@ -14,10 +14,10 @@ The primary drivers are tenant isolation, evidence grounding, safe tool use, ext
 
 ```mermaid
 flowchart TB
-  User[Browser User] --> Edge[Global HTTPS Load Balancer and Cloud Armor]
+  User[Browser User] --> Edge[Ingress Load Balancer and Cloud Armor]
   Admin[Authorized Administrator] --> Edge
-  Edge --> Web[Next.js Web]
-  Edge --> API[FastAPI API]
+  Edge --> Web[Next.js Web on Kubernetes]
+  Edge --> API[FastAPI API on Kubernetes]
   Web -->|OIDC session and API v1| API
   API --> Authz[Identity and Policy Enforcement]
   API --> Chat[Conversation Service]
@@ -63,12 +63,12 @@ The web application never directly accesses provider secrets, Pinecone, customer
 flowchart TD
   Start([START]) --> Guard[Input and Security Guard]
   Guard --> Context[Trusted Authorization Context]
-  Context --> Persona[Persona Selector]
+  Context --> Persona[Persona and Context]
   Persona --> Router[Intent Router]
-  Router -->|simple| Dispatch[Agent Dispatch]
+  Router -->|document question - implemented| Doc[Document RAG Node]
+  Router -->|future routes| Dispatch[Agent Dispatch]
   Router -->|mixed or multi-step| Planner[Bounded Planner]
   Planner --> Dispatch
-  Dispatch --> Doc[Document Agent]
   Dispatch --> DB[Database Agent]
   Dispatch --> Math[Math Agent]
   Dispatch --> General[General Agent]
@@ -262,7 +262,7 @@ flowchart TB
 
 - **Identity:** enterprise-compatible OIDC/OAuth2 Authorization Code + PKCE behind a provider abstraction; Google Identity Platform is preferred on GCP. Server-managed secure sessions or short-lived tokens, IdP-managed MFA, revocation/session invalidation, and workload identity prevent domain coupling to provider claims.
 - **Authorization:** RBAC plus resource attributes. Policy decisions derive organization membership, role, resource ACL, data classification, tool permission, and tenant provider policy. Deny by default.
-- **Network:** only the global load balancer is public. Cloud Run ingress is restricted to load balancer/internal paths; Cloud SQL and Memorystore use private IP; VPC egress/connectors and firewall policy restrict destinations. External Pinecone/LLM egress uses TLS and provider allowlists; Private Service Connect is preferred when supported and justified.
+- **Network:** only the external load balancer/Ingress is public. GKE uses default-deny NetworkPolicy, narrowly allowed service/egress paths, Kubernetes RBAC, Workload Identity, and private Cloud SQL/Memorystore access. External Pinecone/LLM egress uses TLS and provider allowlists; Private Service Connect is preferred when supported and justified.
 - **Secrets/crypto:** Secret Manager references, KMS-backed encryption, rotation, workload identity, TLS, encrypted storage/backups, and no long-lived service-account keys.
 - **Uploads:** quarantined bucket, content validation/malware scan, resource quotas, parsing isolation, immutable source object, signed access, and lifecycle/retention controls.
 - **Agent/tool boundary:** model output is a proposal. Trusted policy code validates identity, authorization, schema, bounds, timeout, and destination before execution.
@@ -276,14 +276,14 @@ Threats explicitly addressed include cross-tenant IDOR/retrieval/cache leakage, 
 ```mermaid
 flowchart TB
   Traffic[User Traffic] --> LB[Global Load Balancer]
-  LB --> WebPool[Autoscaled Web Instances]
-  LB --> APIPool[Autoscaled Stateless API Instances]
+  LB --> WebPool[Web Deployment and HPA]
+  LB --> APIPool[Stateless API Deployment and HPA]
   APIPool --> GraphPool[Bounded Agent Concurrency]
   APIPool --> Queue[Pub/Sub Queues]
-  Queue --> IngestPool[Ingestion Workers by Queue Depth]
-  Queue --> EmbedPool[Embedding Workers by Queue Depth]
-  Queue --> LabPool[Isolated Lab Workers by Queue Depth]
-  Queue --> EvalPool[Evaluation Workers by Queue Depth]
+  Queue --> IngestPool[Ingestion Worker Deployment and Autoscaling]
+  Queue --> EmbedPool[Embedding Worker Deployment and Autoscaling]
+  Queue --> LabPool[Isolated Lab Worker Pool]
+  Queue --> EvalPool[Evaluation Worker Pool]
   GraphPool --> Redis[(Shared Cache and Rate Limits)]
   GraphPool --> PG[(Cloud SQL HA and Read Replicas)]
   GraphPool --> Pine[(Pinecone Capacity)]
@@ -293,11 +293,11 @@ flowchart TB
   Backpressure --> Queue
 ```
 
-Web/API instances scale by concurrency, request latency, and CPU. Worker pools scale independently by oldest-message age, queue depth, and task duration; lab workloads have strict quotas and do not consume chat capacity. Cloud SQL scales vertically first with connection pooling, indexed access, partitioning/archival where justified, and read replicas for suitable reads. Storage and Pub/Sub are managed elastic services. Pinecone capacity is sized and monitored independently.
+Web/API pods scale with HPA from CPU, memory, latency, and custom concurrency metrics. Worker pools scale independently from queue depth/age; lab workloads have strict quotas and do not consume chat capacity. Pod disruption budgets, topology spread, requests/limits, readiness/startup probes, and graceful termination protect availability. Cloud SQL scales vertically first with connection pooling, indexed access, partitioning/archival where justified, and read replicas for suitable reads. Storage and Pub/Sub are managed elastic services. Pinecone capacity is sized and monitored independently.
 
 Backpressure is mandatory: per-tenant and per-user limits, maximum upload/page/token/result sizes, bounded agent steps, concurrency semaphores for providers/databases, and queue admission limits. Hot-path caches are permission- and version-aware. WebSocket trace connections use authenticated handshakes, strict origin checks, heartbeat, reconnect cursors, bounded buffers, and finite retention; event history lives outside individual API instances.
 
-Availability target is not yet approved. The proposed baseline uses multi-zone Cloud Run, regional HA Cloud SQL, replicated managed storage, retryable Pub/Sub delivery, provider circuit breakers, and regional deployment. Multi-region active-active is deferred until residency, RTO/RPO, and load justify its complexity.
+Availability target is not yet approved. The proposed baseline uses a regional multi-zone GKE cluster, regional HA Cloud SQL, replicated managed storage, retryable Pub/Sub delivery, provider circuit breakers, and regional deployment. Multi-region active-active is deferred until residency, RTO/RPO, and load justify its complexity.
 
 ## 11. GCP deployment architecture
 
@@ -305,12 +305,20 @@ Availability target is not yet approved. The proposed baseline uses multi-zone C
 flowchart TB
   DNS[Cloud DNS] --> GLB[Global External HTTPS Load Balancer]
   GLB --> Armor[Cloud Armor]
-  Armor --> Web[Cloud Run Web]
-  Armor --> API[Cloud Run API]
-  API --> Agent[Cloud Run Agent Runtime]
+  Armor --> Ingress[GKE Ingress]
+  subgraph GKE[Regional GKE Cluster]
+    Ingress --> Web[Web Deployment plus HPA]
+    Ingress --> API[API Deployment plus HPA]
+    API --> Agent[Agent Runtime]
+    IW[Ingestion Worker Deployment]
+    EW[Evaluation and Lab Worker Pools]
+    OTel[OpenTelemetry Collectors]
+    Filebeat[Filebeat]
+    Prom[Prometheus]
+  end
   API --> PubSub[Pub/Sub]
-  PubSub --> IW[Cloud Run Ingestion Jobs or Service]
-  PubSub --> EW[Cloud Run Evaluation and Lab Jobs]
+  PubSub --> IW
+  PubSub --> EW
   API --> SQL[(Cloud SQL PostgreSQL HA)]
   Agent --> SQL
   API --> Redis[(Memorystore Redis)]
@@ -323,19 +331,19 @@ flowchart TB
   API --> SM[Secret Manager]
   Agent --> SM
   SM --> KMS[Cloud KMS]
-  Web --> Obs[Cloud Logging Monitoring Trace and OTel]
-  API --> Obs
-  Agent --> Obs
-  IW --> Obs
-  AR[Artifact Registry] --> Web
-  AR --> API
-  AR --> IW
-  CICD[CI and Controlled Delivery] --> AR
-  CICD --> Web
-  CICD --> API
+  OTel --> Obs[Cloud Trace and Metrics]
+  Filebeat --> ELK[Elasticsearch and Kibana]
+  Prom --> Grafana[Grafana]
+  AR[Artifact Registry] --> GKE
+  Jenkins[Jenkins CI CD] --> AR
+  Jenkins --> Helm[Versioned Helm Releases]
+  Helm --> GKE
+  SM[Secret Manager plus CSI] --> GKE
 ```
 
-Recommended environment isolation is separate GCP projects for development, staging, and production, with separate service accounts, databases, buckets, secrets, queues, Pinecone indexes/namespaces, budgets, and telemetry labels. Terraform will define infrastructure only in Phase 13. Cloud Run is preferred initially because workloads are containerized/stateless and it reduces operational burden; GKE is an explicit later migration option for specialized GPU, daemon, network, or scheduling needs. Cloud Run Jobs suit bounded batch work, while subscription-driven services suit continuous queue consumption; final choice is validated against Pub/Sub delivery and cancellation needs.
+Local Kubernetes uses kind. The authoritative cloud target is GKE, delivered with Helm and Jenkins from immutable Artifact Registry images. Production pods run as non-root with read-only filesystems where practical, dropped Linux capabilities, resource bounds, service-account-specific Workload Identity, Kubernetes RBAC, default-deny NetworkPolicy, and Secret Manager CSI/runtime secret access. Prometheus/Grafana, ELK/Filebeat, and OpenTelemetry provide the required observability stack. These deployment assets are intentionally deferred to the deployment milestone.
+
+Recommended environment isolation is separate GCP projects for development, staging, and production, with separate service accounts, databases, buckets, secrets, queues, Pinecone indexes/namespaces, budgets, and telemetry labels. Exact GKE topology and capacity are selected in the deployment milestone after SLO and load evidence exist.
 
 Cloud Storage buckets are separated by quarantine, originals, processed pages/chunks, lab artifacts, and exports with lifecycle/retention policies. Cloud SQL uses private IP, HA, automated backups/PITR, and connection pooling. CI uses workload identity federation, signed provenance where available, staged promotion, smoke/security gates, canary traffic, and rollback.
 
@@ -398,7 +406,7 @@ Failures are classified as validation, authentication, authorization, not-found,
 | ADR-004 | LangGraph typed orchestration with trusted policy/tool gates | Accepted | Extensible routing while keeping security out of model discretion. |
 | ADR-005 | Pub/Sub plus PostgreSQL durable job ledger; Redis non-authoritative | Accepted for later phase | GCP-native elastic delivery with explicit status/idempotency; neither is implemented in Phase 1. |
 | ADR-006 | WebSocket for live trace/progress | Accepted/Required | Implements the explicit Dynamic Agentic Systems protocol requirement with authenticated safe events. |
-| ADR-007 | Cloud Run-first, GKE only on demonstrated need | Accepted | Exact region, capacity, RTO, and RPO are deferred to deployment. |
+| ADR-007 | kind locally and GKE in cloud; Helm/Jenkins delivery | Accepted/authoritative | Cloud Run is not the final target. Exact region, capacity, RTO, and RPO remain deferred. |
 | ADR-008 | One Pinecone index per environment/embedding compatibility version, one namespace per tenant | Accepted | Narrows query scope/cost and cross-tenant risk; mandatory KB/document authorization metadata remains. |
 | ADR-009 | Deterministic page rendering; OCR only when native extraction is insufficient | Accepted | Rendering preserves visual fidelity and OCR remains an extraction fallback. |
 | ADR-010 | PostgreSQL-first connector and adapter seam for later MongoDB/NoSQL | Accepted | Establishes the first safe structured-data path while retaining extensibility. |
@@ -409,6 +417,6 @@ Failures are classified as validation, authentication, authorization, not-found,
 
 Deferred deployment, retention, provider-policy, connector-network, and financial-data decisions are maintained in `ProjectRequirements.md`.
 
-## 16. Phase 1 implementation boundary
+## 16. Milestone 2 implementation boundary
 
-The implemented foundation currently comprises the Next.js web shell, FastAPI service, provider-neutral authentication seam, server-derived organization/RBAC context, PostgreSQL schema and Alembic migration, structured diagnostics, stable errors, local PostgreSQL Compose service, automated tests, and CI gates. The diagrams above remain the approved target architecture; their Pinecone, LangGraph, ingestion, WebSocket, worker, model-provider, and GCP runtime components are intentionally not implemented before their assigned phases.
+The working slice now comprises authenticated tenant-scoped KBs and PDF uploads; local replaceable object storage; deterministic PyMuPDF extraction/rendering; page-preserving recursive chunks; Vertex embedding, Pinecone, and Gemini adapters; PostgreSQL metadata authorization; a typed six-node LangGraph; grounded/unanswerable responses; exact citation previews; persisted allowlisted WebSocket trace events; and usable KB/chat web surfaces. Test fakes are enabled only in `APP_ENV=test`; managed mode requires ADC and Pinecone configuration. Ingestion currently runs as an in-process background task and local storage is development-only. Durable workers, Cloud Storage, OCR implementation, reranking, and deployment remain later work.

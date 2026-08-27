@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from functools import lru_cache
+from pathlib import Path
 from typing import Literal, Self
 
 from pydantic import Field, model_validator
@@ -25,6 +26,25 @@ class Settings(BaseSettings):
     auth_mode: Literal["disabled", "test", "oidc"] = "disabled"
     oidc_issuer_url: str | None = None
     oidc_client_id: str | None = None
+    oidc_jwks_url: str | None = None
+    ai_provider_mode: Literal["managed", "fake"] = "managed"
+    google_cloud_project: str | None = None
+    google_cloud_location: str = "us-central1"
+    vertex_embedding_model: str = "gemini-embedding-001"
+    vertex_embedding_dimension: int = Field(default=768, ge=128, le=3072)
+    vertex_gemini_model: str = "gemini-2.5-flash"
+    pinecone_api_key: str | None = None
+    pinecone_index: str | None = None
+    pinecone_index_host: str | None = None
+    external_call_timeout_seconds: float = Field(default=30.0, ge=1.0, le=120.0)
+    external_call_max_attempts: int = Field(default=3, ge=1, le=5)
+    max_pdf_size_mb: int = Field(default=25, ge=1, le=250)
+    max_pdf_pages: int = Field(default=200, ge=1, le=2000)
+    chunk_size_chars: int = Field(default=1800, ge=200, le=12000)
+    chunk_overlap_chars: int = Field(default=240, ge=0, le=2000)
+    rag_top_k: int = Field(default=6, ge=1, le=20)
+    rag_context_max_chars: int = Field(default=18000, ge=1000, le=100000)
+    local_storage_root: Path = Path(".data/objects")
 
     @property
     def cors_origin_list(self) -> list[str]:
@@ -38,6 +58,14 @@ class Settings(BaseSettings):
     def expose_openapi(self) -> bool:
         return self.app_env in {"development", "test"}
 
+    @property
+    def max_pdf_size_bytes(self) -> int:
+        return self.max_pdf_size_mb * 1024 * 1024
+
+    @property
+    def managed_ai_configured(self) -> bool:
+        return bool(self.google_cloud_project and self.pinecone_api_key and self.pinecone_index)
+
     @model_validator(mode="after")
     def validate_security_settings(self) -> Self:
         if not self.database_url.startswith(("postgresql+asyncpg://", "postgresql://")):
@@ -46,6 +74,10 @@ class Settings(BaseSettings):
             raise ValueError("test authentication is allowed only when APP_ENV=test")
         if self.auth_mode == "oidc" and not (self.oidc_issuer_url and self.oidc_client_id):
             raise ValueError("OIDC_ISSUER_URL and OIDC_CLIENT_ID are required for OIDC")
+        if self.ai_provider_mode == "fake" and self.app_env != "test":
+            raise ValueError("fake AI providers are allowed only when APP_ENV=test")
+        if self.chunk_overlap_chars >= self.chunk_size_chars:
+            raise ValueError("CHUNK_OVERLAP_CHARS must be smaller than CHUNK_SIZE_CHARS")
         if self.app_env in {"staging", "production"}:
             if self.auth_mode != "oidc":
                 raise ValueError("staging and production require AUTH_MODE=oidc")

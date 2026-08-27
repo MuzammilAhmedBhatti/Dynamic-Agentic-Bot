@@ -2,13 +2,13 @@
 
 Status: ACTIVE
 Owner: Engineering
-Last updated: 2026-08-27 (Phase 0)
+Last updated: 2026-08-27 (Milestone 2)
 
 These rules are non-negotiable unless an explicit, documented architecture decision approved by the project owner replaces one. In conflicts, use this order: correctness, security, data isolation, reliability, mandatory product requirements, grounding and citation quality, scalability, maintainability, testability, observability, performance, cost, user experience, curriculum completeness, polish.
 
 ## Scope and delivery
 
-1. Work one approved phase at a time. Phase 1 is approved; Phase 2 must not begin without explicit approval.
+1. Work one approved milestone at a time. Milestone 2 is complete; Milestone 3 must not begin without explicit approval.
 2. Keep `Architecture.md`, `Design.md`, `Memory.md`, `Phases.md`, `ProjectRequirements.md`, and `Rules.md` synchronized with implementation.
 3. Do not mark work complete unless its acceptance criteria and required verification have actually passed.
 4. Do not ship production TODOs, fake success paths, placeholder behavior, or claims that were not verified.
@@ -18,7 +18,7 @@ These rules are non-negotiable unless an explicit, documented architecture decis
 
 ## Security and privacy
 
-1. Security is designed into every phase; Phase 11 is hardening, not the start of security work.
+1. Security is designed into every milestone; the final hardening milestone is not the start of security work.
 2. Never hard-code or commit secrets. Never expose provider credentials, signing keys, database passwords, or decrypted secret values to the browser or logs.
 3. Authenticate every protected request and authorize server-side at the organization, knowledge-base, document, data-source, persona, prompt, evaluation, and tool boundary as applicable.
 4. Preserve trusted tenant and user context through PostgreSQL queries, Pinecone filters, object paths, Redis keys, queue messages, traces, and audit records. Never trust browser-supplied `tenant_id`.
@@ -74,6 +74,7 @@ These rules are non-negotiable unless an explicit, documented architecture decis
 12. Production embeddings initially prefer Vertex AI. Add reranking only after baseline RAG works and evaluation demonstrates its value.
 13. PDF previews use deterministic page rendering; OCR runs only when normal extraction is insufficient.
 14. Third-party GitHub Actions must be pinned to reviewed immutable commit SHAs, with the corresponding release tag recorded in a comment.
+15. Local Kubernetes uses kind and final cloud deployment uses GKE. Delivery uses Helm, Jenkins, Artifact Registry, and Secret Manager; workloads require non-root containers, Kubernetes RBAC, default-deny NetworkPolicy, HPA, Prometheus/Grafana, ELK/Filebeat, and OpenTelemetry.
 
 ## Documentation discipline
 
@@ -83,8 +84,9 @@ These rules are non-negotiable unless an explicit, documented architecture decis
 4. Genuine ambiguities are recorded with a recommendation and impact; irreversible choices require owner approval.
 5. A verification claim must name the check that ran and its result.
 
-## Current phase boundary
+## Current milestone boundary
 
-1. Phase 1 is complete after its local quality gates and repository CI pass.
-2. Do not implement ingestion, Pinecone access, LangGraph execution, model-provider calls, WebSocket streaming, or cloud infrastructure until Phase 2 or the relevant later phase is explicitly approved.
-3. Phase 1 UI routes must remain clearly labeled foundation states and must not masquerade as working AI features.
+1. Milestone 2 is complete only after its local quality gates, migration round trip, documentation, and repository publication pass.
+2. The implemented core AI path may be maintained and corrected, but do not start conversations/persona administration, DB/math agents, AI Lab, Evaluation Center, production workers, or deployment without Milestone 3/4 approval.
+3. Do not create kind, Helm, Jenkins, GKE, or cloud infrastructure assets during Milestone 2.
+4. Managed AI adapters use real Vertex AI/Pinecone implementations in managed mode; deterministic fakes are test-only and must be impossible to enable in staging/production.

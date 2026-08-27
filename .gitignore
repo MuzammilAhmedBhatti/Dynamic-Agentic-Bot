@@ -35,6 +35,7 @@ pnpm-debug.log*
 *.swp
 
 # Runtime artifacts
+.data/
 logs/
 tmp/
 coverage/

@@ -28,6 +28,7 @@ jobs:
     env:
       APP_ENV: test
       AUTH_MODE: test
+      AI_PROVIDER_MODE: fake
       LOG_LEVEL: WARNING
       DATABASE_URL: postgresql+asyncpg://dynamic_agentic:phase1_ci@127.0.0.1:5432/dynamic_agentic
       CORS_ORIGINS: http://localhost:3000

@@ -8,6 +8,7 @@ BASE = {
     "database_url": "postgresql+asyncpg://user:password@localhost/database",
     "cors_origins": "https://app.example.com",
     "allowed_hosts": "app.example.com",
+    "ai_provider_mode": "managed",
 }
 
 

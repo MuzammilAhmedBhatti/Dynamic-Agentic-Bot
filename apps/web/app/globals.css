@@ -34,3 +34,142 @@ body {
   outline: 3px solid var(--accent);
   outline-offset: 3px;
 }
+
+input,
+select,
+textarea {
+  width: 100%;
+  margin-top: 0.4rem;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  background: rgb(0 0 0 / 22%);
+  padding: 0.7rem 0.8rem;
+  color: var(--text);
+}
+
+input[type="file"] {
+  padding: 0.55rem;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.panel {
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  background: rgb(13 27 24 / 88%);
+  padding: 1rem;
+  box-shadow: 0 1rem 3rem rgb(0 0 0 / 12%);
+}
+
+.eyebrow {
+  color: var(--accent);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.page-title {
+  margin-top: 0.35rem;
+  font-size: clamp(1.8rem, 4vw, 3rem);
+  font-weight: 700;
+}
+
+.page-copy {
+  margin-top: 0.6rem;
+  max-width: 54rem;
+  color: var(--muted);
+}
+
+.section-title {
+  font-weight: 650;
+}
+
+.field-label {
+  display: block;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 650;
+}
+
+.primary-button,
+.secondary-button {
+  border-radius: 0.75rem;
+  padding: 0.72rem 1rem;
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.primary-button {
+  background: var(--accent);
+  color: #052219;
+}
+
+.secondary-button {
+  border: 1px solid var(--border);
+  background: var(--surface-strong);
+}
+
+th,
+td {
+  padding: 0.75rem;
+  vertical-align: top;
+}
+
+.status {
+  display: inline-block;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.15rem 0.55rem;
+  color: var(--muted);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+}
+
+.status-ready,
+.status-grounded {
+  border-color: var(--accent-strong);
+  color: var(--accent);
+}
+
+.status-failed,
+.status-ocr_required {
+  border-color: #b75062;
+  color: #fda4af;
+}
+
+.citation-card {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  padding: 0.7rem;
+  text-align: left;
+}
+
+.citation-card:hover {
+  border-color: var(--accent);
+}
+
+.source-preview {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  background: white;
+}
+
+.trace-list li {
+  display: grid;
+  border-left: 2px solid var(--accent-strong);
+  padding: 0.25rem 0 0.75rem 0.75rem;
+  font-size: 0.78rem;
+}
+
+.trace-list small {
+  color: var(--muted);
+}

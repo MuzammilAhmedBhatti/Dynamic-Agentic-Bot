@@ -1,13 +1,13 @@
 # Detailed Design
 
-Status: APPROVED BASELINE - Phase 1
+Status: APPROVED BASELINE - Milestone 2 implemented
 Last updated: 2026-08-27
 
-This document turns `Architecture.md` into implementable contracts. It is intentionally technology-specific enough to guide Phase 1 while remaining free of placeholder application code.
+This document turns `Architecture.md` into implementable contracts and records the Milestone 2 implementation.
 
 ## 1. Proposed repository structure
 
-Only `docs/` is created in Phase 0. The remaining tree is a proposal to be scaffolded incrementally in approved phases.
+The tree below is the target layout. Milestone 2 keeps cohesive runtime modules inside `apps/api` and implements only folders with working behavior.
 
 ```text
 DynamicAgenticBot/
@@ -70,7 +70,8 @@ DynamicAgenticBot/
 │   └── policies/
 ├── deploy/
 │   ├── compose/                     # local development
-│   └── cloud-run/                   # service/job configuration
+│   ├── kind/                        # local Kubernetes cluster configuration
+│   └── helm/                        # versioned GKE application charts
 ├── scripts/                         # small, reviewed developer/CI utilities
 ├── docs/
 │   ├── Architecture.md
@@ -163,7 +164,7 @@ Codes are stable and map to validation, unauthenticated, authorization, not foun
 
 ## 3. Streaming event contract
 
-WebSocket is authoritative. Planned endpoint: `WS /api/v1/chat/runs/{run_id}/trace`, with an authenticated handshake, strict origin policy, tenant/run authorization before upgrade, heartbeat, bounded outbound buffers, and reconnect cursor support.
+WebSocket is authoritative. The implemented endpoint is `WS /api/v1/organizations/{organization_id}/chat/runs/{run_id}/trace`, with an authenticated handshake, strict origin policy, tenant/run authorization before acceptance, persisted replay, and an allowlisted event schema. Heartbeat, reconnect cursors, and distributed fan-out remain deployment-hardening work.
 
 ```json
 {
@@ -180,7 +181,7 @@ WebSocket is authoritative. Planned endpoint: `WS /api/v1/chat/runs/{run_id}/tra
 }
 ```
 
-Allowed event types: `run.accepted`, `stage.started`, `stage.completed`, `stage.failed`, `citation.available`, `answer.delta` (if approved), `job.progress`, `run.completed`, `run.failed`, and heartbeat. Safe summaries use allowlisted fields; never transmit prompts, chain-of-thought, credentials, SQL credentials, or raw restricted results. Event retention is bounded and tenant-scoped. WebSocket tracing is not implemented until its assigned product phase.
+Implemented event types are `request_received`, `authorization_passed`, `router_completed`, `retrieval_started`, `retrieval_completed`, `llm_started`, `llm_completed`, `citation_validation_completed`, `response_completed`, and `error`. Safe summaries use allowlisted fields; prompts, chain-of-thought, credentials, SQL credentials, and raw document content are never transmitted.
 
 ## 4. Core service interfaces
 
@@ -447,30 +448,36 @@ LLM judges may supplement but not replace deterministic evidence/citation/policy
 
 CI gates: format/lint -> type checks -> unit -> contract/integration -> security/dependency/secret scans -> build/SBOM/provenance -> container scan -> staging deploy -> smoke/E2E/evaluation thresholds -> explicit production approval.
 
-## 18. Phase 1 implemented design
+## 18. Implemented design through Milestone 2
 
-Phase 1 establishes only the secure execution boundary needed by later work:
+Phase 1 established the secure execution boundary and Milestone 2 adds the first complete AI path:
 
 - `apps/api` is a Python 3.12/3.13 FastAPI service with strict settings validation, structured logging, request correlation, security headers, safe error envelopes, readiness checks, and versioned routes.
 - The authentication interface accepts standards-based OIDC identity claims through a provider adapter; no vendor SDK leaks into the domain model. Production/staging configuration requires OIDC and HTTPS origins. The test-header provider is rejected in every non-test environment.
 - The authorization service maps an authenticated subject to a server-side user, organization membership, roles, and permissions. The organization-context endpoint proves positive permission handling, permission denial, and cross-tenant denial without trusting tenant identifiers from identity claims.
 - PostgreSQL owns normalized tenant and RBAC truth. The initial Alembic revision creates organizations, users, memberships, roles, permissions, membership roles, and role permissions; composite foreign keys enforce organization consistency.
-- `apps/web` is a Next.js/TypeScript/Tailwind application shell with accessible, responsive routes and explicit future-feature states for Chat, Knowledge Base, Agents, AI Lab, Evaluation, Security, and Admin.
-- Local development uses a narrowly scoped PostgreSQL Compose service. CI independently gates backend lint/format/type/tests/migrations and frontend lint/type/build/audit. No application image, cloud resource, AI provider, vector database, queue, or fake AI workflow is introduced.
+- `apps/web` is a Next.js/TypeScript/Tailwind application with usable Knowledge Base upload/status and Chat answer/citation/page-preview/trace workspaces; later product areas retain explicit future-feature states.
+- Authenticated tenant-scoped PDF upload validates MIME/signature/size/pages, sanitizes names, deduplicates by content, stores opaque references, renders deterministic page PNGs, chunks with page lineage, embeds in batches, and indexes versioned Pinecone metadata. Re-index removes prior document vectors before replacement.
+- The provider seams are `StorageService`, `EmbeddingProvider`, `VectorStore`, and `LLMGateway`. Managed mode uses ADC-backed Vertex AI embeddings/Gemini and a server-side Pinecone key. Deterministic fakes are rejected outside test mode.
+- PostgreSQL re-authorizes retrieved chunks before context construction and preview disclosure. The LLM receives evidence-only instructions; citation IDs are validated against retrieved evidence, and insufficient evidence produces a structured abstention.
+- A typed LangGraph implements guard -> persona/context -> router -> document RAG -> grounding/citation -> formatter. Authorization remains trusted application code.
+- Local development uses PostgreSQL Compose and development-only local object storage. In-process background ingestion is intentionally replaceable by durable workers. CI gates backend lint/format/type/tests/migrations and frontend lint/type/build/audit.
 
-Implemented HTTP contracts are `GET /health`, `GET /api/v1/health`, `GET /api/v1/ready`, and permission-protected `GET /api/v1/organizations/{organization_id}/context`. WebSocket events, ingestion APIs, knowledge-base APIs, and agent execution contracts remain target designs for later phases.
+Implemented contracts also include test-only session creation, KB create/list, document upload/list/re-index, authorized page preview, chat run create/execute, and authenticated safe trace WebSocket endpoints.
 
 ## 19. GCP configuration design
 
 - Separate GCP projects per environment; labels and budgets mandatory.
 - Workload Identity Federation for CI and service identities; no service-account key files.
-- Load balancer + managed TLS + Cloud Armor; Cloud Run ingress restricted.
-- Serverless VPC Access/direct VPC egress as supported; private Cloud SQL/Memorystore; connector egress allowlists.
+- Local Kubernetes uses kind; cloud runtime is regional multi-zone GKE behind managed TLS, load balancer, Ingress, and Cloud Armor.
+- Helm is the release format and Jenkins is the CI/CD controller; immutable images come from Artifact Registry.
+- Pods use non-root security contexts, dropped capabilities, bounded resources, Kubernetes RBAC, default-deny NetworkPolicy, HPA, probes, disruption budgets, and Workload Identity.
+- Private Cloud SQL/Memorystore and explicit connector/provider egress allowlists are required.
 - Secret Manager stores provider/connector secrets, KMS manages encryption policy; applications receive references/versions.
 - Buckets separated by trust/purpose with uniform access, public access prevention, lifecycle, retention, and event logging.
 - Pub/Sub topics/subscriptions separated by workload, each with DLQ and least-privilege publisher/subscriber identities.
-- Cloud Logging/Monitoring/Trace receive OTel data with redaction processors and retention policies; Security Command Center integration is evaluated.
+- Prometheus/Grafana serve metrics, ELK/Filebeat serves logs, and OpenTelemetry carries traces/metrics with redaction and retention policy.
 - Cloud SQL HA, PITR, automated backups, restore tests, connection pool/proxy; cross-region replicas depend on RTO/RPO.
 - Artifact Registry images are immutable by digest; CI signs/attests and controlled deployment promotes the same image digest.
 
-No infrastructure is created in Phase 0.
+No kind, Helm, Jenkins, or GKE deployment assets are created in Milestone 2; they belong to the deployment milestone.

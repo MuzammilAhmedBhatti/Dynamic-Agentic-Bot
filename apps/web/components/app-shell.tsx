@@ -13,7 +13,7 @@ export function AppShell({ children }: Readonly<{ children: React.ReactNode }>) 
         <div className="mb-8">
           <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[var(--accent)]">Dynamic Agentic</p>
           <h1 className="mt-2 text-xl font-semibold">Intelligence Platform</h1>
-          <p className="mt-2 text-sm text-[var(--muted)]">Secure foundation · Phase 1</p>
+          <p className="mt-2 text-sm text-[var(--muted)]">Core document AI · Milestone 2</p>
         </div>
         <nav aria-label="Primary navigation">
           <ul className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-1">

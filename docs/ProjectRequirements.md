@@ -1,6 +1,6 @@
 # Project Requirements
 
-Status: APPROVED BASELINE - Phase 1
+Status: APPROVED BASELINE - Milestone 2 implemented
 Last updated: 2026-08-27
 Authority: this document is the requirements system of record; source documents remain authoritative where wording conflicts.
 
@@ -10,7 +10,7 @@ Authority: this document is the requirements system of record; source documents 
 2. `AI_Training_Document_Intern (1).pdf` is the only AI training PDF present and is treated as the requested curriculum (`CUR`). All numbered items 1-122 are mapped.
 3. `MASTER_PROMPT.md` is the only master prompt present and is treated as the requested `MASTER_PROJECT_PROMPT.md` (`MASTER`). It elaborates security, quality, AI Lab, evaluation, deployment, and delivery requirements without replacing DAS.
 4. If sources differ, DAS product behavior wins; MASTER supplies the more secure/production-oriented interpretation; theoretical curriculum content is placed in AI Lab/Evaluation/Documentation unless it has real production value.
-5. Phase 0 creates documentation only. The terms “must,” “required,” and “shall” describe target-product obligations, not current implementation state.
+5. The terms “must,” “required,” and “shall” describe target-product obligations. Milestone status is recorded separately and must not be confused with final-product completion.
 
 ## 2. Product vision
 
@@ -201,9 +201,9 @@ PostgreSQL is authoritative for durable normalized identity, tenancy, ACLs, know
 
 Core invariants: tenant-qualified uniqueness; foreign keys; explicit lifecycle/status; immutable versions; migrations only; no secrets in database configuration rows; no large arbitrary JSON for relational security entities; deletion/reindex tombstones; object/vector checksums and lineage.
 
-### Approved-direction GCP deployment (not provisioned)
+### Authoritative GCP deployment direction (not provisioned)
 
-Separate environment projects; Cloud DNS; Global External HTTPS Load Balancer; Cloud Armor; Cloud Run web/API/agent services and jobs; Google Identity Platform behind the OIDC/OAuth2 abstraction; Vertex AI Gemini and embeddings; Cloud SQL PostgreSQL HA; Memorystore Redis; Cloud Storage purpose-separated buckets; Pub/Sub topics/subscriptions/DLQs; Secret Manager/KMS; Artifact Registry; Workload Identity Federation; Cloud Logging/Monitoring/Trace with OpenTelemetry; Pinecone and other policy-approved providers through controlled TLS egress. Exact region, capacity, RTO, and RPO are deferred to deployment. Terraform, budgets, backup/PITR, private database/cache networking, gated CI/CD, canary/rollback, and restore exercises are required before production.
+Local Kubernetes uses kind. Cloud deployment uses GKE behind Cloud DNS, the Global External HTTPS Load Balancer, and Cloud Armor. Releases use Helm and Jenkins; images use Artifact Registry; runtime secrets use Secret Manager; pods use Workload Identity, Kubernetes RBAC, default-deny NetworkPolicy, HPA, and secure non-root/container-hardening controls. Prometheus/Grafana, ELK/Filebeat, and OpenTelemetry are mandatory. The platform also uses Vertex AI Gemini/embeddings, Cloud SQL PostgreSQL HA, Memorystore, purpose-separated Cloud Storage, Pub/Sub/DLQs, and Pinecone through controlled TLS egress. Exact region, cluster topology/capacity, RTO, and RPO remain deferred. No deployment is provisioned in Milestone 2.
 
 ## 9. Testing and acceptance requirements
 
@@ -309,45 +309,45 @@ Classification meanings: `PRODUCTION` is a real platform capability; `AI_LAB` is
 | 81 | Positional encoding | AI_LAB + DOCUMENTATION | Transformer Lab | Encoding visualization | PLANNED |
 | 82 | Encoder-decoder architecture | AI_LAB + DOCUMENTATION | Transformer Lab | Architecture/task mapping | PLANNED |
 | 83 | BERT masked language modeling and bidirectionality | AI_LAB + DOCUMENTATION | Transformer/NLP Lab | Classification/NER or reranker experiment | PLANNED |
-| 84 | GPT causal/autoregressive generation | PRODUCTION + AI_LAB + DOCUMENTATION | LLM Gateway / Transformer Lab | Generation behavior and limitations | PLANNED |
+| 84 | GPT causal/autoregressive generation | PRODUCTION + AI_LAB + DOCUMENTATION | LLM Gateway / Transformer Lab | Generation behavior and limitations | PARTIALLY IMPLEMENTED (production autoregressive generation gateway; lab/docs later) |
 | 85 | BPE, WordPiece, SentencePiece tokenization | AI_LAB + DOCUMENTATION | Transformer Lab | Tokenizer comparison and context-cost effects | PLANNED |
 | 86 | GPT, Llama, Mistral, Gemma architecture overview | DOCUMENTATION + AI_LAB | Model catalog / LLM Lab | Capability/family comparison without training | PLANNED |
 | 87 | Pretraining vs fine-tuning vs in-context learning | DOCUMENTATION + EVALUATION | Model strategy / Evaluation Center | Decision guide and prompt/fine-tune comparison where feasible | PLANNED |
 | 88 | Hugging Face pipeline API | AI_LAB + EVALUATION | NLP/Transformer Lab | Sentiment/generation comparison with accuracy/F1 | PLANNED |
 | 89 | Generative AI: text, image, code, audio, video | DOCUMENTATION + AI_LAB | Generative AI Lab | Modality overview; text practical, others bounded demos/explainers | PLANNED |
 | 90 | Diffusion models: DALL-E, Stable Diffusion, Midjourney | DOCUMENTATION + AI_LAB | Generative AI Lab | Conceptual comparison; no core-product feature invented | PLANNED |
-| 91 | OpenAI, Anthropic, Google, Cohere APIs | PRODUCTION + AI_LAB + EVALUATION | LLM Gateway / LLM Lab | Provider-neutral contract; adapters only as approved | PLANNED |
-| 92 | Hallucination, context windows, knowledge cutoff | PRODUCTION + EVALUATION + DOCUMENTATION | RAG/validators / Evaluation Center | Grounding, budget management, unanswerable tests | PLANNED |
-| 93 | AI safety and responsible use | PRODUCTION + EVALUATION + DOCUMENTATION | Security/policy / Safety evaluations | Policy controls, red teaming, limitations | PLANNED |
+| 91 | OpenAI, Anthropic, Google, Cohere APIs | PRODUCTION + AI_LAB + EVALUATION | LLM Gateway / LLM Lab | Provider-neutral contract; adapters only as approved | PARTIALLY IMPLEMENTED (Google Vertex adapter and provider seam) |
+| 92 | Hallucination, context windows, knowledge cutoff | PRODUCTION + EVALUATION + DOCUMENTATION | RAG/validators / Evaluation Center | Grounding, budget management, unanswerable tests | PARTIALLY IMPLEMENTED (bounded evidence, citation validation, abstention tests) |
+| 93 | AI safety and responsible use | PRODUCTION + EVALUATION + DOCUMENTATION | Security/policy / Safety evaluations | Policy controls, red teaming, limitations | PARTIALLY IMPLEMENTED (trusted authorization, safe trace, evidence controls) |
 | 94 | Zero-shot prompting | PRODUCTION + AI_LAB + EVALUATION | Prompt Registry / Prompt Lab | Versioned zero-shot baseline | PLANNED |
 | 95 | Few-shot prompting | PRODUCTION + AI_LAB + EVALUATION | Prompt Registry / Prompt Lab | Versioned examples and comparative evaluation | PLANNED |
 | 96 | Chain-of-Thought prompting | DOCUMENTATION + EVALUATION | Prompt/Safety Lab | Explain reasoning prompting; never expose hidden CoT | PLANNED |
-| 97 | System prompts, context design, personas | PRODUCTION + AI_LAB + EVALUATION | Prompt Registry / Personas | Role separation and evaluated persona prompts | PLANNED |
-| 98 | Prompt templates and output parsers | PRODUCTION + AI_LAB + EVALUATION | Prompt Registry / contracts | Versioned templates and schema validators | PLANNED |
+| 97 | System prompts, context design, personas | PRODUCTION + AI_LAB + EVALUATION | Prompt Registry / Personas | Role separation and evaluated persona prompts | PARTIALLY IMPLEMENTED (evidence-separated document persona/context node) |
+| 98 | Prompt templates and output parsers | PRODUCTION + AI_LAB + EVALUATION | Prompt Registry / contracts | Versioned templates and schema validators | PARTIALLY IMPLEMENTED (versioned grounded prompt and structured schema) |
 | 99 | Evaluate and iterate on prompts | EVALUATION + PRODUCTION | Evaluation Center / Prompt Registry | Dataset-backed comparison and promotion gates | PLANNED |
 | 100 | OpenAI chat API and system prompts | PRODUCTION + AI_LAB | OpenAI adapter / LLM Lab | Current supported API adapter and guided usage | PLANNED |
 | 101 | Anthropic messages API and system prompts | PRODUCTION + AI_LAB | Anthropic adapter / LLM Lab | Provider adapter and guided comparison | PLANNED |
 | 102 | Maintain conversation history | PRODUCTION + AI_LAB | Conversation service / Chatbot Lab | Bounded short-term history and summary policy | PLANNED |
-| 103 | Structured outputs and JSON mode | PRODUCTION + AI_LAB + EVALUATION | LLM Gateway / schema layer | Server-validated typed outputs and failure tests | PLANNED |
+| 103 | Structured outputs and JSON mode | PRODUCTION + AI_LAB + EVALUATION | LLM Gateway / schema layer | Server-validated typed outputs and failure tests | PARTIALLY IMPLEMENTED (Gemini JSON schema plus server validation) |
 | 104 | Function calling / model-triggered actions | PRODUCTION + AI_LAB + EVALUATION | Tool registry / Agent Lab | Model proposes; trusted code authorizes/executes | PLANNED |
-| 105 | RAG: retriever, knowledge base, generator | PRODUCTION + AI_LAB + EVALUATION | RAG service / Retrieval Lab | End-to-end Pinecone RAG and educational decomposition | PLANNED |
-| 106 | Indexing, retrieval, augmentation, generation | PRODUCTION + AI_LAB + EVALUATION | Ingestion and RAG services | Versioned pipeline with stage metrics | PLANNED |
-| 107 | RAG for hallucination/private/current data | PRODUCTION + EVALUATION + DOCUMENTATION | RAG validators / Evaluation Center | Grounding/unanswerable/private-scope tests | PLANNED |
-| 108 | Fixed-size and recursive chunking | PRODUCTION + AI_LAB + EVALUATION | Ingestion / Retrieval Lab | Page-aware strategies compared on retrieval metrics | PLANNED |
-| 109 | Document loaders and preprocessing | PRODUCTION + AI_LAB | Ingestion / RAG Lab | Safe page-aware loaders, cleaning, OCR fallback | PLANNED |
-| 110 | Embeddings and semantic similarity | PRODUCTION + AI_LAB + EVALUATION | Embedding service / Lab | Production embeddings and semantic comparison | PLANNED |
+| 105 | RAG: retriever, knowledge base, generator | PRODUCTION + AI_LAB + EVALUATION | RAG service / Retrieval Lab | End-to-end Pinecone RAG and educational decomposition | PARTIALLY IMPLEMENTED (complete production baseline; lab/evaluation later) |
+| 106 | Indexing, retrieval, augmentation, generation | PRODUCTION + AI_LAB + EVALUATION | Ingestion and RAG services | Versioned pipeline with stage metrics | PARTIALLY IMPLEMENTED (production baseline and safe stage trace) |
+| 107 | RAG for hallucination/private/current data | PRODUCTION + EVALUATION + DOCUMENTATION | RAG validators / Evaluation Center | Grounding/unanswerable/private-scope tests | PARTIALLY IMPLEMENTED (tenant isolation and unanswerable tests) |
+| 108 | Fixed-size and recursive chunking | PRODUCTION + AI_LAB + EVALUATION | Ingestion / Retrieval Lab | Page-aware strategies compared on retrieval metrics | PARTIALLY IMPLEMENTED (configurable recursive page-aware production chunker) |
+| 109 | Document loaders and preprocessing | PRODUCTION + AI_LAB | Ingestion / RAG Lab | Safe page-aware loaders, cleaning, OCR fallback | PARTIALLY IMPLEMENTED (PDF extraction/rendering and explicit OCR seam) |
+| 110 | Embeddings and semantic similarity | PRODUCTION + AI_LAB + EVALUATION | Embedding service / Lab | Production embeddings and semantic comparison | PARTIALLY IMPLEMENTED (Vertex embedding adapter, version/dimension controls) |
 | 111 | OpenAI embeddings and Sentence-Transformers | PRODUCTION + AI_LAB + EVALUATION | Embedding adapters / Lab | Approved model comparison with versioned indexes | PLANNED |
 | 112 | FAISS or Chroma vector database | AI_LAB + DOCUMENTATION | Vector Database Lab | Curriculum-focused local comparison; not production replacement | PLANNED |
 | 113 | Cosine, dot-product, Euclidean similarity | AI_LAB + EVALUATION + DOCUMENTATION | Embedding Lab | Metric calculations and retrieval comparisons | PLANNED |
-| 114 | Agent perception, reasoning, action loop | PRODUCTION + AI_LAB + DOCUMENTATION | Agent runtime / Agent Lab | Bounded state/action lifecycle explainer and trace | PLANNED |
+| 114 | Agent perception, reasoning, action loop | PRODUCTION + AI_LAB + DOCUMENTATION | Agent runtime / Agent Lab | Bounded state/action lifecycle explainer and trace | PARTIALLY IMPLEMENTED (bounded document workflow and safe trace) |
 | 115 | ReAct: Reason and Act | PRODUCTION + AI_LAB + DOCUMENTATION | LangGraph / Agent Lab | Controlled tool loop without exposing private reasoning | PLANNED |
 | 116 | Tool use and function calling in agents | PRODUCTION + AI_LAB + EVALUATION | Tool registry / Agent Lab | Authorized structured tools and adversarial tests | PLANNED |
 | 117 | Short-term vs long-term memory | PRODUCTION + AI_LAB + DOCUMENTATION | Conversation memory / Agent Lab | Bounded context and opt-in authorized long-term design | PLANNED |
 | 118 | LangChain chains, prompts, tools, simple agents | AI_LAB + DOCUMENTATION | Agent Lab | Educational comparison; production uses LangChain only where useful | PLANNED |
-| 119 | LangGraph nodes, edges, stateful workflows | PRODUCTION + AI_LAB + EVALUATION | Agent runtime / Agent Lab | Full production graph plus simple educational graph | PLANNED |
-| 120 | Build a FastAPI REST endpoint | PRODUCTION + AI_LAB | API / Deployment Lab | Versioned typed REST API and basic lab endpoint exercise | PARTIALLY IMPLEMENTED (production API foundation, Phase 1; lab exercise later) |
-| 121 | Accept input and return predictions over HTTP | PRODUCTION + AI_LAB + EVALUATION | API / Deployment Lab | Validated request/response with auth, limits, tests | PARTIALLY IMPLEMENTED (validated HTTP contract, Phase 1; prediction workflow later) |
-| 122 | Test an API locally | EVALUATION + DOCUMENTATION | Test suite / developer guide | Local unit/integration/API smoke workflow | IMPLEMENTED (Phase 1) |
+| 119 | LangGraph nodes, edges, stateful workflows | PRODUCTION + AI_LAB + EVALUATION | Agent runtime / Agent Lab | Full production graph plus simple educational graph | PARTIALLY IMPLEMENTED (typed six-node production document graph) |
+| 120 | Build a FastAPI REST endpoint | PRODUCTION + AI_LAB | API / Deployment Lab | Versioned typed REST API and basic lab endpoint exercise | PARTIALLY IMPLEMENTED (production KB/chat APIs; lab exercise later) |
+| 121 | Accept input and return predictions over HTTP | PRODUCTION + AI_LAB + EVALUATION | API / Deployment Lab | Validated request/response with auth, limits, tests | PARTIALLY IMPLEMENTED (authenticated grounded-answer HTTP workflow) |
+| 122 | Test an API locally | EVALUATION + DOCUMENTATION | Test suite / developer guide | Local unit/integration/API smoke workflow | IMPLEMENTED (21-test backend suite through Milestone 2) |
 
 ## 11. Curriculum coverage strategy
 
@@ -360,9 +360,12 @@ Classification meanings: `PRODUCTION` is a real platform capability; `AI_LAB` is
 
 - Reproducible local containers and configuration without committed secrets.
 - Minimal non-root production images, health probes, resource bounds, pinned builds, scans, and SBOM-ready provenance.
+- Local Kubernetes uses kind; cloud Kubernetes uses GKE. Helm packages releases and Jenkins performs gated CI/CD from Artifact Registry.
+- Runtime secrets use GCP Secret Manager. GKE requires Workload Identity, Kubernetes RBAC, default-deny NetworkPolicy, HPA, probes, disruption budgets, and secure non-root containers.
+- Observability uses Prometheus/Grafana, ELK/Filebeat, and OpenTelemetry.
 - Infrastructure as code only after approval; separate environments, least-privilege IAM/network, TLS/WAF/rate controls, managed secrets/keys, backups, telemetry, budgets, and rollback.
 - CI/CD cannot promote when critical tests/security/evaluation thresholds fail; production requires explicit approval.
-- Kubernetes/GKE readiness is architectural, not an immediate requirement. Cloud Run-first is proposed; GKE is used only for demonstrated workload needs.
+- No Kubernetes or cloud deployment implementation is authorized in Milestone 2.
 
 ## 13. Out of scope for the initial production release
 
@@ -373,7 +376,6 @@ Classification meanings: `PRODUCTION` is a real platform capability; `AI_LAB` is
 - Production FAISS/Chroma replacing Pinecone.
 - Forced production use of RNN/LSTM/CNN/diffusion or other curriculum concepts lacking product value.
 - Multi-region active-active deployment until residency/SLO/RTO/RPO and cost justify it.
-- Kubernetes/GKE merely for appearance.
 - Full NoSQL natural-language querying until scope and safe semantics are approved.
 
 ## 14. Future extensions
@@ -393,8 +395,14 @@ Approved NoSQL connector adapters; additional providers/models/personas/tools; h
 | D-007 | Structured data | PostgreSQL first; MongoDB/NoSQL later. Connector network topology is selected in the structured-data phase. | ACCEPTED / DEFERRED DETAIL |
 | D-008 | Embeddings and reranking | Vertex AI embeddings preferred initially; reranking follows baseline RAG and evaluation. | ACCEPTED |
 | D-009 | Live tracing | WebSocket is mandatory. | ACCEPTED |
-| D-010 | Deployment targets | Exact GCP region, RTO/RPO, and production capacity are deferred to deployment. | DEFERRED |
+| D-010 | Deployment targets | kind locally; GKE with Helm/Jenkins in cloud. Exact GCP region, topology/capacity, RTO/RPO remain deferred. | ACCEPTED / DEFERRED DETAIL |
 | D-011 | Financial data | Dataset/provider/licensing and year definition are deferred to the structured-data phase. | DEFERRED |
 | D-012 | Retention and provider data policy | Per-class retention/deletion/legal hold and final provider egress policy must be approved before affected data is persisted or transmitted. | REQUIRES LATER APPROVAL |
 
-No deferred item blocks Phase 1. Phase 2 and later remain unauthorized until separately approved.
+No deferred item blocked Milestone 2. Milestone 3 and later remain unauthorized until separately approved.
+
+## 16. Milestone 2 requirement status
+
+Implemented and verified in this milestone: the document-KB subset of DAS-002, DAS-008, DAS-010 through DAS-012, DAS-014 through DAS-018, DAS-022, DAS-025, DAS-026, DAS-028 through DAS-030, DAS-032, and DAS-035 through DAS-043. Items whose final acceptance also requires OCR, suggestions, full personas/routes, deployment hardening, or live managed-service credentials remain `PARTIALLY IMPLEMENTED`, not complete.
+
+Milestone 2 also implements `FR-IAM-001..003` for the current resource set; the PDF portion of `FR-RAG-001`; `FR-RAG-002..005` for baseline dense RAG; the document subset of `FR-AGT-001`; `FR-LLM-001..003` for Vertex/Gemini without fallback; the initial Knowledge Base/Chat/trace/source UI; and corresponding tenant/upload/RAG/citation/WebSocket tests. Durable queue workers, Cloud Storage, production OCR/malware scanner, distributed trace streaming, and GKE deployment remain explicitly unimplemented.
