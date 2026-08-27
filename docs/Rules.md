@@ -73,6 +73,7 @@ These rules are non-negotiable unless an explicit, documented architecture decis
 11. PostgreSQL is the first structured-data connector. MongoDB/NoSQL is a later explicit requirement and must not be implied complete.
 12. Production embeddings initially prefer Vertex AI. Add reranking only after baseline RAG works and evaluation demonstrates its value.
 13. PDF previews use deterministic page rendering; OCR runs only when normal extraction is insufficient.
+14. Third-party GitHub Actions must be pinned to reviewed immutable commit SHAs, with the corresponding release tag recorded in a comment.
 
 ## Documentation discipline
 
