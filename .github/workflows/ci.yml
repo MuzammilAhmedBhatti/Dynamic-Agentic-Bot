@@ -1,0 +1,65 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: dynamic_agentic
+          POSTGRES_USER: dynamic_agentic
+          POSTGRES_PASSWORD: phase1_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U dynamic_agentic -d dynamic_agentic"
+          --health-interval 2s
+          --health-timeout 3s
+          --health-retries 20
+    env:
+      APP_ENV: test
+      AUTH_MODE: test
+      LOG_LEVEL: WARNING
+      DATABASE_URL: postgresql+asyncpg://dynamic_agentic:phase1_ci@127.0.0.1:5432/dynamic_agentic
+      CORS_ORIGINS: http://localhost:3000
+      ALLOWED_HOSTS: localhost,127.0.0.1,testserver
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+          enable-cache: true
+      - run: uv sync --project apps/api --all-groups --locked
+      - run: uv run --project apps/api alembic -c apps/api/alembic.ini upgrade head
+      - run: uv run --project apps/api alembic -c apps/api/alembic.ini downgrade base
+      - run: uv run --project apps/api alembic -c apps/api/alembic.ini upgrade head
+      - run: uv run --project apps/api ruff check apps/api/src tests/backend
+      - run: uv run --project apps/api ruff format --check apps/api/src tests/backend
+      - run: uv run --project apps/api mypy apps/api/src
+      - run: uv run --project apps/api pytest
+
+  frontend:
+    runs-on: ubuntu-latest
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: apps/web/package-lock.json
+      - run: npm ci --prefix apps/web
+      - run: npm audit --prefix apps/web --audit-level=high
+      - run: npm run lint --prefix apps/web
+      - run: npm run typecheck --prefix apps/web
+      - run: npm run build --prefix apps/web
