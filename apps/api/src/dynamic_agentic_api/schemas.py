@@ -73,6 +73,10 @@ class DocumentResponse(BaseModel):
 
 class ChatRunCreate(BaseModel):
     knowledge_base_id: uuid.UUID
+    persona_id: uuid.UUID | None = None
+    provider: str | None = Field(default=None, max_length=100)
+    model: str | None = Field(default=None, max_length=200)
+    data_source_id: uuid.UUID | None = None
 
 
 class ChatRunCreated(BaseModel):
@@ -93,16 +97,75 @@ class CitationSourceResponse(BaseModel):
     preview_reference: str
 
 
+class PersonaResponse(BaseModel):
+    id: uuid.UUID
+    slug: str
+    name: str
+    description: str
+    allowed_routes: list[str]
+    default_provider: str
+    default_model: str
+    scope: str
+    is_active: bool
+
+
+class ProviderModelResponse(BaseModel):
+    provider: str
+    model: str
+    available: bool
+    reason: str | None = None
+
+
+class CalculationResponse(BaseModel):
+    operation: str
+    inputs: list[float]
+    result: float
+    unit: str | None = None
+
+
+class DatabaseEvidenceResponse(BaseModel):
+    source_id: uuid.UUID
+    database_name: str
+    tables: list[str]
+    columns: list[str]
+    row_count: int
+
+
+class DataSourceCreate(BaseModel):
+    knowledge_base_id: uuid.UUID
+    name: str = Field(min_length=1, max_length=200)
+    kind: Literal["postgresql"] = "postgresql"
+    connection_url: str = Field(min_length=1, max_length=2000)
+    allowed_schema: str = Field(min_length=1, max_length=100)
+    allowed_tables: list[str] = Field(min_length=1, max_length=50)
+
+
+class DataSourceResponse(BaseModel):
+    id: uuid.UUID
+    organization_id: uuid.UUID
+    knowledge_base_id: uuid.UUID
+    name: str
+    kind: str
+    allowed_schema: str
+    allowed_tables: list[str]
+    is_active: bool
+
+
 class ChatRunResponse(BaseModel):
     run_id: uuid.UUID
     trace_id: str
     answer: str
     support: Literal["grounded", "unanswerable"]
+    persona: PersonaResponse
+    route: list[str]
     sources: list[CitationSourceResponse]
     provider: str | None
     model: str | None
     graph_version: str
     prompt_version: str
+    calculations: list[CalculationResponse] = Field(default_factory=list)
+    database_evidence: list[DatabaseEvidenceResponse] = Field(default_factory=list)
+    suggestions: list[str] = Field(default_factory=list)
 
 
 class TestSessionRequest(BaseModel):

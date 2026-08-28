@@ -39,6 +39,7 @@ def test_secure_production_configuration_is_valid() -> None:
         auth_mode="oidc",
         oidc_issuer_url="https://identity.example.com",
         oidc_client_id="dynamic-agentic-web",
+        data_source_encryption_key="bkx2TEZBWkZ1RXhBZ2k5eWQ3MklVVUVGcVhHS25zVXlTTWpNODAxST0=",
         _env_file=None,
     )
     assert settings.expose_openapi is False

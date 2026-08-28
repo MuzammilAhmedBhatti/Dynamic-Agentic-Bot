@@ -1,7 +1,7 @@
 # Project Requirements
 
-Status: APPROVED BASELINE - Milestone 2 implemented
-Last updated: 2026-08-27
+Status: APPROVED BASELINE - Milestone 3 implemented, acceptance in progress
+Last updated: 2026-08-28
 Authority: this document is the requirements system of record; source documents remain authoritative where wording conflicts.
 
 ## 1. Sources, precedence, and assumptions
@@ -399,10 +399,18 @@ Approved NoSQL connector adapters; additional providers/models/personas/tools; h
 | D-011 | Financial data | Dataset/provider/licensing and year definition are deferred to the structured-data phase. | DEFERRED |
 | D-012 | Retention and provider data policy | Per-class retention/deletion/legal hold and final provider egress policy must be approved before affected data is persisted or transmitted. | REQUIRES LATER APPROVAL |
 
-No deferred item blocked Milestone 2. Milestone 3 and later remain unauthorized until separately approved.
+No deferred item blocked Milestone 3. Milestone 4 remains unauthorized until separately approved.
 
 ## 16. Milestone 2 requirement status
 
 Implemented and verified in this milestone: the document-KB subset of DAS-002, DAS-008, DAS-010 through DAS-012, DAS-014 through DAS-018, DAS-022, DAS-025, DAS-026, DAS-028 through DAS-030, DAS-032, and DAS-035 through DAS-043. Items whose final acceptance also requires OCR, suggestions, full personas/routes, deployment hardening, or live managed-service credentials remain `PARTIALLY IMPLEMENTED`, not complete.
 
 Milestone 2 also implements `FR-IAM-001..003` for the current resource set; the PDF portion of `FR-RAG-001`; `FR-RAG-002..005` for baseline dense RAG; the document subset of `FR-AGT-001`; `FR-LLM-001..003` for Vertex/Gemini without fallback; the initial Knowledge Base/Chat/trace/source UI; and corresponding tenant/upload/RAG/citation/WebSocket tests. Durable queue workers, Cloud Storage, production OCR/malware scanner, distributed trace streaming, and GKE deployment remain explicitly unimplemented.
+
+## 17. Milestone 3 requirement status
+
+Implemented: production persona registry and AUTO/manual selector; typed DOCUMENT/DATABASE/MATH routing and combined-state execution; tenant-scoped encrypted PostgreSQL sources; approved schema discovery; SQLGlot AST validation; single SELECT/read-only CTE enforcement; table/schema/function restrictions; read-only transaction, timeout, and row bound; structured database evidence; deterministic calculation contract; provider/model catalog and server-side validation; follow-up suggestions; unified response; expanded allowlisted WebSocket events; and three-column frontend controls/evidence/trace integration.
+
+Verification covers automatic Legal/Financial selection, manual/invalid persona behavior, document/database/math routes, PostgreSQL count/average, row limits, mutations/comments/stacked statements/schema escape/unsafe functions, cross-tenant source denial, percentage/change/average/division errors, invalid models, citation regression, safe trace serialization, backend static/tests, and frontend lint/type/build. Managed-provider and real browser E2E results are recorded at final acceptance rather than inferred.
+
+Curriculum evidence updated by this milestone: topic 86 (prompt/context security), 89-92 (LLM/provider/model behavior), 95-98 (RAG/embeddings remain production), 99-104 (agent/tool/persona/routing safety), 106-109 (deterministic math/statistics), 111-114 (structured outputs, validation, evaluation tests), and 121-122 (HTTP/local API testing). The traceability classification is unchanged: theoretical ML/DL/NLP topics remain AI_LAB/EVALUATION/DOCUMENTATION rather than forced into production.

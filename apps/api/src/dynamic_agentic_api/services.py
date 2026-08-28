@@ -5,6 +5,7 @@ from functools import lru_cache
 
 from dynamic_agentic_api.agents.document_graph import DocumentRagGraph
 from dynamic_agentic_api.config import get_settings
+from dynamic_agentic_api.data_sources.service import CredentialCipher, PostgresConnector
 from dynamic_agentic_api.embeddings.providers import (
     EmbeddingProvider,
     FakeEmbeddingProvider,
@@ -16,6 +17,9 @@ from dynamic_agentic_api.ingestion.pdf import PdfProcessor
 from dynamic_agentic_api.ingestion.scanning import SignatureOnlyMalwareScanner
 from dynamic_agentic_api.ingestion.service import IngestionService
 from dynamic_agentic_api.llm.gateway import FakeLlmProvider, LlmProvider, VertexGeminiProvider
+from dynamic_agentic_api.llm.registry import LlmRegistry, ProviderModel
+from dynamic_agentic_api.math.service import MathService
+from dynamic_agentic_api.personas.service import PersonaRegistry
 from dynamic_agentic_api.rag.service import RagService
 from dynamic_agentic_api.storage.service import LocalStorageService, StorageService
 from dynamic_agentic_api.tracing.service import TraceHub, TraceService
@@ -39,6 +43,10 @@ class AiServices:
     rag: RagService
     graph: DocumentRagGraph
     vectors: VectorStore
+    llms: LlmRegistry
+    personas: PersonaRegistry
+    database: PostgresConnector
+    cipher: CredentialCipher
 
 
 @lru_cache
@@ -62,6 +70,7 @@ def get_ai_services() -> AiServices:
         embeddings = FakeEmbeddingProvider()
         vectors: VectorStore = FakeVectorStore()
         llm = FakeLlmProvider()
+        catalog = [ProviderModel("fake", llm.model, True)]
     else:
         if not settings.managed_ai_configured:
             raise AppError(
@@ -74,7 +83,7 @@ def get_ai_services() -> AiServices:
         assert settings.pinecone_index
         embeddings = VertexEmbeddingProvider(
             project=settings.google_cloud_project,
-            location=settings.google_cloud_location,
+            location=settings.resolved_vertex_embedding_location,
             model=settings.vertex_embedding_model,
             dimension=settings.vertex_embedding_dimension,
             timeout_seconds=settings.external_call_timeout_seconds,
@@ -88,11 +97,27 @@ def get_ai_services() -> AiServices:
         )
         llm = VertexGeminiProvider(
             project=settings.google_cloud_project,
-            location=settings.google_cloud_location,
+            location=settings.resolved_vertex_gemini_location,
             model=settings.vertex_gemini_model,
             timeout_seconds=settings.external_call_timeout_seconds,
             max_attempts=settings.external_call_max_attempts,
         )
+        catalog = [
+            ProviderModel("vertex-ai", settings.vertex_gemini_model, True),
+            ProviderModel(
+                "openai", "gpt-5.2", False, "OpenAI adapter/credentials are not configured."
+            ),
+            ProviderModel(
+                "anthropic",
+                "claude-sonnet-4-5",
+                False,
+                "Anthropic adapter/credentials are not configured.",
+            ),
+        ]
+    llms = LlmRegistry([llm], catalog)
+    personas = PersonaRegistry(default_provider=llm.provider_name, default_model=llm.model)
+    cipher = CredentialCipher(settings)
+    database = PostgresConnector(settings, cipher)
     rag = RagService(
         settings=settings,
         storage=core.storage,
@@ -112,8 +137,19 @@ def get_ai_services() -> AiServices:
     return AiServices(
         ingestion=ingestion,
         rag=rag,
-        graph=DocumentRagGraph(rag=rag, traces=core.traces),
+        graph=DocumentRagGraph(
+            rag=rag,
+            traces=core.traces,
+            llms=llms,
+            personas=personas,
+            database=database,
+            math=MathService(),
+        ),
         vectors=vectors,
+        llms=llms,
+        personas=personas,
+        database=database,
+        cipher=cipher,
     )
 
 

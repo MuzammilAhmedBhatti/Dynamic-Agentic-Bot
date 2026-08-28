@@ -1,6 +1,6 @@
 # Delivery Milestones
 
-Last updated: 2026-08-27
+Last updated: 2026-08-28
 Rule: execute only the milestone explicitly approved by the owner.
 
 ## Milestone 0 - Discovery and architecture — DONE
@@ -33,9 +33,9 @@ Implemented:
 
 Acceptance evidence: backend lint/format/type checks, 21 tests, frontend lint/type/build, dependency audit, migration round trip, and secret-oriented review must pass before publication. Live managed-provider test is conditional on owner credentials and is not run in CI.
 
-## Milestone 3 - Complete intelligence product
+## Milestone 3 - Complete intelligence product — IMPLEMENTED, ACCEPTANCE IN PROGRESS
 
-Authorization: NOT APPROVED.
+Authorization: APPROVED on 2026-08-28.
 
 Scope when approved:
 
@@ -66,6 +66,10 @@ Entry decisions: GCP region, cluster topology/capacity, SLOs, RTO/RPO, retention
 
 Exit criteria: full CI/E2E/security/evaluation/load/restore/deployment suites pass; GKE deployment is reproducible, observable, recoverable, and approved; every mandatory DAS requirement is verified.
 
+Implementation delivered: persona AUTO/manual selection; typed multi-route LangGraph; safe PostgreSQL source registration/query; AST validation; deterministic math; provider/model registry and validation; suggestions; unified formatting; expanded safe trace; frontend integration; demo data; security/regression tests.
+
+Completion is recorded only after the managed regression and real E2E scenarios pass. Milestone 4 remains unapproved.
+
 ## Current stop boundary
 
-Milestone 2 is complete. Do not start Milestone 3 or provision any cloud/Kubernetes infrastructure until the owner explicitly approves it.
+Stop after Milestone 3 acceptance and repository publication. Do not provision kind, Helm, Jenkins, GKE, cloud resources, AI Lab, or observability infrastructure without explicit Milestone 4 approval.

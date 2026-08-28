@@ -1,7 +1,7 @@
 # Project Memory
 
-Last updated: 2026-08-27
-Current milestone: Milestone 2 complete; next milestone not authorized
+Last updated: 2026-08-28
+Current milestone: Milestone 3 implemented and under final acceptance; Milestone 4 not authorized
 
 ## Product and authority
 
@@ -30,10 +30,18 @@ Current milestone: Milestone 2 complete; next milestone not authorized
 - Persisted, allowlisted WebSocket trace events and usable KB/chat/source/trace UI.
 - Automated unit/integration/E2E-style API tests plus an opt-in live managed-provider integration path.
 
+## Implemented in Milestone 3
+
+- Stable General Assistant, Financial Analyst, and Legal Advisor definitions with AUTO/manual selection and route permissions.
+- Typed multi-route LangGraph with PersonaSelector, Router, DocumentNode, DatabaseNode, MathNode, SuggestionNode, and Formatter.
+- Encrypted, tenant/KB-scoped PostgreSQL source registry; approved-schema discovery; SQLGlot SELECT/CTE enforcement; read-only bounded execution; deterministic `demo_business` data.
+- Deterministic calculation service, unified answer/evidence contract, server allowlisted provider/model selection, unavailable-provider reporting, expanded safe trace events, and full chat-workspace integration.
+
 ## Current limitations and next boundaries
 
 - Local object storage and in-process FastAPI background ingestion are development implementations. Cloud Storage, durable Pub/Sub workers, distributed trace fan-out, scanner integration, and production OCR belong to later milestones.
 - Live Vertex/Pinecone/Gemini validation requires user-provided GCP ADC/project/location, Pinecone key/index/host, and matching embedding dimension. CI uses safe fakes.
-- Reranking, hybrid retrieval, conversations, additional graph routes, personas/admin provider management, structured-data/math agents, AI Lab, Evaluation Center, and GKE deployment are not implemented.
+- Reranking, hybrid retrieval, conversation persistence, tenant-authored persona/provider administration, MongoDB, AI Lab, Evaluation Center, and GKE deployment are not implemented.
 - Exact region, topology/capacity, RTO/RPO/SLOs, retention, provider data policy, connector networking, and financial dataset remain deferred to their implementation milestones.
-- Do not begin the next milestone without explicit owner approval.
+- OpenAI and Anthropic are cataloged as unavailable capability targets; no production adapters or fake responses exist for them. PostgreSQL is the only production structured connector.
+- Do not begin Milestone 4 without explicit owner approval.

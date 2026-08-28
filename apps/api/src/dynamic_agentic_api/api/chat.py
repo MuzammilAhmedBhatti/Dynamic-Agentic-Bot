@@ -17,15 +17,18 @@ from dynamic_agentic_api.auth.dependencies import (
 )
 from dynamic_agentic_api.auth.domain import TenantContext
 from dynamic_agentic_api.config import get_settings
-from dynamic_agentic_api.db.models import AgentRun, AgentTraceEvent, KnowledgeBase
+from dynamic_agentic_api.db.models import AgentRun, AgentTraceEvent, DataSource, KnowledgeBase
 from dynamic_agentic_api.db.session import async_session_factory, get_db_session
 from dynamic_agentic_api.errors import AppError
 from dynamic_agentic_api.schemas import (
+    CalculationResponse,
     ChatRunCreate,
     ChatRunCreated,
     ChatRunExecute,
     ChatRunResponse,
     CitationSourceResponse,
+    DatabaseEvidenceResponse,
+    PersonaResponse,
 )
 from dynamic_agentic_api.services import get_ai_services, get_core_services
 
@@ -52,6 +55,25 @@ async def create_chat_run(
             code="KNOWLEDGE_BASE_NOT_FOUND",
             message="The knowledge base was not found.",
         )
+    ai = get_ai_services()
+    if payload.persona_id is not None:
+        ai.personas.get_by_id(payload.persona_id)
+    selected_llm = ai.llms.resolve(payload.provider, payload.model)
+    if payload.data_source_id is not None:
+        source = await session.scalar(
+            select(DataSource.id).where(
+                DataSource.id == payload.data_source_id,
+                DataSource.organization_id == context.organization_id,
+                DataSource.knowledge_base_id == payload.knowledge_base_id,
+                DataSource.is_active.is_(True),
+            )
+        )
+        if source is None:
+            raise AppError(
+                status_code=404,
+                code="DATA_SOURCE_NOT_FOUND",
+                message="The data source was not found.",
+            )
     run = AgentRun(
         organization_id=context.organization_id,
         user_id=context.user_id,
@@ -60,6 +82,10 @@ async def create_chat_run(
         status="queued",
         graph_version=GRAPH_VERSION,
         prompt_version="grounded-rag-v1",
+        persona_id=payload.persona_id,
+        data_source_id=payload.data_source_id,
+        provider=selected_llm.provider_name,
+        model=selected_llm.model,
     )
     session.add(run)
     await session.commit()
@@ -102,6 +128,10 @@ async def execute_chat_run(
             trace_id=run.trace_id,
             knowledge_base_id=run.knowledge_base_id,
             question=payload.question,
+            persona_id=run.persona_id,
+            data_source_id=run.data_source_id,
+            provider=run.provider,
+            model=run.model,
         )
     except Exception as exc:
         run.status = "failed"
@@ -109,21 +139,53 @@ async def execute_chat_run(
         await session.commit()
         raise
     run.status = "completed"
-    run.provider = result.rag.provider
-    run.model = result.rag.model
+    run.persona_id = result.persona.id
+    run.provider = result.provider
+    run.model = result.model
+    run.route = "+".join(result.routes)
     await session.commit()
     return ChatRunResponse(
         run_id=run.id,
         trace_id=run.trace_id,
         answer=result.answer,
-        support=result.rag.support,
+        support=result.support,  # type: ignore[arg-type]
+        persona=PersonaResponse(
+            id=result.persona.id,
+            slug=result.persona.slug,
+            name=result.persona.name,
+            description=result.persona.description,
+            allowed_routes=list(result.persona.allowed_routes),
+            default_provider=result.persona.default_provider,
+            default_model=result.persona.default_model,
+            scope=result.persona.scope,
+            is_active=result.persona.is_active,
+        ),
+        route=result.routes,
         sources=[
-            CitationSourceResponse.model_validate(asdict(source)) for source in result.rag.sources
+            CitationSourceResponse.model_validate(asdict(source))
+            for source in (result.rag.sources if result.rag else [])
         ],
-        provider=result.rag.provider,
-        model=result.rag.model,
+        provider=result.provider,
+        model=result.model,
         graph_version=run.graph_version,
-        prompt_version=result.rag.prompt_version,
+        prompt_version=result.prompt_version,
+        calculations=[
+            CalculationResponse.model_validate(asdict(item)) for item in result.calculations
+        ],
+        database_evidence=(
+            [
+                DatabaseEvidenceResponse(
+                    source_id=result.database.source_id,
+                    database_name=result.database.database_name,
+                    tables=result.database.tables,
+                    columns=result.database.columns,
+                    row_count=result.database.row_count,
+                )
+            ]
+            if result.database
+            else []
+        ),
+        suggestions=result.suggestions,
     )
 
 
@@ -160,10 +222,13 @@ async def trace_chat_run(
         await websocket.close(code=4401 if exc.status_code == 401 else 4403, reason="Unauthorized")
         return
 
-    await websocket.accept()
     hub = get_core_services().traces.hub
     try:
         async with hub.subscribe(run_id) as queue:
+            # Complete the handshake only after the subscriber is registered.
+            # The frontend executes the run immediately after onopen, so the
+            # reverse order could lose every fast live event.
+            await websocket.accept()
             async with async_session_factory() as session:
                 replay = (
                     await session.scalars(

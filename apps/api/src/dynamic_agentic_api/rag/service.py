@@ -64,6 +64,8 @@ class RagService:
         context: TenantContext,
         knowledge_base_id: uuid.UUID,
         question: str,
+        llm: LlmProvider | None = None,
+        persona_behavior: str = "",
         trace: Callable[[str, str, dict[str, object]], Awaitable[None]] | None = None,
     ) -> RagResult:
         if trace:
@@ -147,11 +149,12 @@ class RagService:
 
         if trace:
             await trace("llm_started", "grounded_generation", {})
-        generated = await self._llm.generate_grounded_answer(
+        generated = await (llm or self._llm).generate_grounded_answer(
             LlmRequest(
                 question=question,
                 evidence=evidence,
                 prompt_version=self.prompt_version,
+                persona_behavior=persona_behavior,
             )
         )
         if trace:

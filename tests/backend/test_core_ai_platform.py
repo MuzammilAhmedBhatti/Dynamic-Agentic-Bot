@@ -19,6 +19,7 @@ from dynamic_agentic_api.db.models import (
 )
 from dynamic_agentic_api.db.session import async_session_factory
 from dynamic_agentic_api.main import app
+from dynamic_agentic_api.tracing.service import SafeTraceEvent
 from sqlalchemy import select
 from starlette.testclient import TestClient
 from starlette.websockets import WebSocketDisconnect
@@ -179,12 +180,15 @@ async def test_upload_ingestion_chat_citation_preview_and_trace(
     assert event_types == [
         "request_received",
         "authorization_passed",
+        "persona_selection_started",
+        "persona_selected",
         "router_completed",
         "retrieval_started",
         "retrieval_completed",
         "llm_started",
         "llm_completed",
         "citation_validation_completed",
+        "suggestion_generation_completed",
         "response_completed",
     ]
 
@@ -271,3 +275,16 @@ def test_websocket_trace_rejects_unauthenticated_connection() -> None:
     ):
         pass
     assert caught.value.code == 4401
+
+
+def test_live_trace_event_is_json_serializable() -> None:
+    event = SafeTraceEvent(
+        sequence=1,
+        run_id=uuid.uuid4(),
+        event_type="request_received",
+        stage="security_input_guard",
+        occurred_at="2026-08-27T00:00:00+00:00",
+        duration_ms=1,
+        safe_summary={},
+    )
+    assert isinstance(event.to_dict()["run_id"], str)

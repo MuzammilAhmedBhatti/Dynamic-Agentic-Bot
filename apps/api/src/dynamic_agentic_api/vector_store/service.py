@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from typing import Any, Protocol, cast
 
 from pinecone import Pinecone
+from pinecone.exceptions import NotFoundException
 
 from dynamic_agentic_api.errors import AppError
 
@@ -134,6 +135,11 @@ class PineconeVectorStore:
                 filter=cast(Any, {"document_id": {"$eq": document_id}}),
                 timeout=self._timeout,
             )
+        except NotFoundException:
+            # Deletion is idempotent. Pinecone returns 404 when a tenant
+            # namespace has not been created yet, which is expected on a
+            # document's first ingestion.
+            return
         except Exception as exc:
             raise _unavailable("VECTOR_DELETE_UNAVAILABLE") from exc
 

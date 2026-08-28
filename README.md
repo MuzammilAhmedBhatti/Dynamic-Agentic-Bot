@@ -4,7 +4,7 @@ Secure, multi-tenant Dynamic Agentic AI Intelligence Platform.
 
 ## Milestone status
 
-Milestone 2 implements the first working PDF -> extraction/rendering -> Vertex embeddings -> Pinecone -> retrieval -> Gemini -> grounded answer -> exact-page citation/preview flow, orchestrated by LangGraph with a safe WebSocket trace. The next milestone is not authorized.
+Milestone 3 extends the verified PDF RAG path into a typed dynamic-agent product: AUTO/manual personas, DOCUMENT/DATABASE/MATH and combined routes, encrypted PostgreSQL sources, AST-validated read-only SQL, deterministic calculations, server-validated provider/model selection, follow-up suggestions, unified evidence, and safe WebSocket tracing. Milestone 4 is not authorized.
 
 ## Prerequisites
 
@@ -26,6 +26,8 @@ Milestone 2 implements the first working PDF -> extraction/rendering -> Vertex e
 7. Install frontend dependencies: `npm ci --prefix apps/web`.
 8. Start the web application: `npm run dev --prefix apps/web`.
 9. Open `http://localhost:3000/knowledge-base`, connect with the printed IDs, create a KB, and upload a PDF. Then use `/chat` with the same IDs.
+10. To test the Database Agent, expand **Register PostgreSQL source** in Chat and submit the configured `DATABASE_URL`, schema `demo_business`, and tables `customers,orders,sales`. The credential is encrypted and is never returned to the browser.
+11. Try `What is the percentage increase from 240 to 300?`, `How many orders are in the demo database?`, and a question grounded in the uploaded PDF. AUTO selects the persona and route; selectors allow an approved manual override.
 
 `APP_ENV=test` is only for the explicit local test-session adapter; managed Vertex/Pinecone providers remain real when `AI_PROVIDER_MODE=managed`. Staging/production require `APP_ENV=staging|production`, `AUTH_MODE=oidc`, HTTPS origins, and managed AI mode.
 
@@ -47,4 +49,6 @@ npm run build --prefix apps/web
 
 Run the credential-gated managed-provider test with `RUN_MANAGED_AI_INTEGRATION=1 uv run --project apps/api pytest -m managed_integration tests/backend/test_managed_ai_integration.py`.
 
-Do not begin Milestone 3 without explicit approval.
+OpenAI and Anthropic models appear as unavailable capability targets until their real adapters and server-side credentials are configured. Gemini through Vertex AI remains the production provider; no fake provider response is used outside tests.
+
+Do not begin Milestone 4 without explicit approval.

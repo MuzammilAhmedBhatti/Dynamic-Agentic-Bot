@@ -3,7 +3,12 @@ from __future__ import annotations
 from dynamic_agentic_api.embeddings.providers import FakeEmbeddingProvider
 from dynamic_agentic_api.ingestion.chunking import RecursivePageChunker
 from dynamic_agentic_api.ingestion.contracts import ExtractedPage
-from dynamic_agentic_api.vector_store.service import FakeVectorStore, VectorRecord
+from dynamic_agentic_api.vector_store.service import (
+    FakeVectorStore,
+    PineconeVectorStore,
+    VectorRecord,
+)
+from pinecone.exceptions import NotFoundException
 
 
 async def test_embedding_and_vector_abstractions_enforce_filters() -> None:
@@ -76,3 +81,14 @@ def test_chunk_boundaries_preserve_page_metadata() -> None:
         chunk.title == "Retention" and chunk.section == "Policy" for chunk in chunks
     )
     assert all(len(chunk.text) <= 90 for chunk in chunks)
+
+
+async def test_pinecone_delete_is_idempotent_for_missing_namespace() -> None:
+    class MissingNamespaceIndex:
+        def delete(self, **_: object) -> None:
+            raise NotFoundException(status=404, reason="Namespace not found")
+
+    store = PineconeVectorStore.__new__(PineconeVectorStore)
+    store._index = MissingNamespaceIndex()  # type: ignore[assignment]
+    store._timeout = 1
+    await store.delete_document(namespace="new-tenant", document_id="document-id")

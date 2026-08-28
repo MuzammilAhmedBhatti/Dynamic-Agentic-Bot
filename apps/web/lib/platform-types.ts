@@ -32,11 +32,61 @@ export interface ChatResult {
   trace_id: string;
   answer: string;
   support: "grounded" | "unanswerable";
+  persona: Persona;
+  route: Array<"document" | "database" | "math">;
   sources: CitationSource[];
   provider: string | null;
   model: string | null;
   graph_version: string;
   prompt_version: string;
+  calculations: Calculation[];
+  database_evidence: DatabaseEvidence[];
+  suggestions: string[];
+}
+
+export interface Persona {
+  id: string;
+  slug: string;
+  name: string;
+  description: string;
+  allowed_routes: string[];
+  default_provider: string;
+  default_model: string;
+  scope: string;
+  is_active: boolean;
+}
+
+export interface ProviderModel {
+  provider: string;
+  model: string;
+  available: boolean;
+  reason: string | null;
+}
+
+export interface DataSource {
+  id: string;
+  organization_id: string;
+  knowledge_base_id: string;
+  name: string;
+  kind: "postgresql";
+  allowed_schema: string;
+  allowed_tables: string[];
+  is_active: boolean;
+}
+
+export interface Calculation {
+  operation: string;
+  inputs: number[];
+  result: number;
+  unit: string | null;
+}
+
+export interface DatabaseEvidence {
+  source_id: string;
+  database_name: string;
+  tables: string[];
+  columns: string[];
+  row_count: number;
 }
 
 export interface TraceEvent {

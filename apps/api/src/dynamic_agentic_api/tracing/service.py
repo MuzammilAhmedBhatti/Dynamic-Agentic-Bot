@@ -25,7 +25,9 @@ class SafeTraceEvent:
     safe_summary: dict[str, object]
 
     def to_dict(self) -> dict[str, object]:
-        return asdict(self)
+        payload = asdict(self)
+        payload["run_id"] = str(self.run_id)
+        return payload
 
 
 class TraceHub:
@@ -66,6 +68,14 @@ class TraceService:
             "provider",
             "model",
             "error_code",
+            "persona",
+            "selection_mode",
+            "route_count",
+            "source_type",
+            "row_count",
+            "table_count",
+            "operation",
+            "suggestion_count",
         }
     )
 

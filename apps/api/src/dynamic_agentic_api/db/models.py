@@ -12,6 +12,7 @@ from sqlalchemy import (
     Index,
     Integer,
     String,
+    Text,
     UniqueConstraint,
 )
 from sqlalchemy.dialects.postgresql import JSONB, UUID
@@ -168,6 +169,55 @@ class KnowledgeBase(TimestampMixin, Base):
     status: Mapped[str] = mapped_column(String(20), nullable=False, default="active")
 
 
+class Persona(TimestampMixin, Base):
+    __tablename__ = "personas"
+    __table_args__ = (
+        UniqueConstraint("organization_id", "slug", name="uq_personas_org_slug"),
+        CheckConstraint("scope IN ('system', 'tenant')", name="ck_personas_scope"),
+        Index("ix_personas_org_active", "organization_id", "is_active"),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    organization_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("organizations.id", ondelete="CASCADE")
+    )
+    slug: Mapped[str] = mapped_column(String(100), nullable=False)
+    name: Mapped[str] = mapped_column(String(200), nullable=False)
+    description: Mapped[str] = mapped_column(String(1000), nullable=False)
+    system_behavior: Mapped[str] = mapped_column(Text, nullable=False)
+    allowed_routes: Mapped[list[str]] = mapped_column(JSONB, nullable=False)
+    default_provider: Mapped[str] = mapped_column(String(100), nullable=False)
+    default_model: Mapped[str] = mapped_column(String(200), nullable=False)
+    scope: Mapped[str] = mapped_column(String(20), nullable=False, default="system")
+    is_active: Mapped[bool] = mapped_column(nullable=False, default=True)
+
+
+class DataSource(TimestampMixin, Base):
+    __tablename__ = "data_sources"
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["knowledge_base_id", "organization_id"],
+            ["knowledge_bases.id", "knowledge_bases.organization_id"],
+            ondelete="CASCADE",
+            name="fk_data_sources_kb_org",
+        ),
+        UniqueConstraint("organization_id", "name", name="uq_data_sources_org_name"),
+        UniqueConstraint("id", "organization_id", name="uq_data_sources_id_org"),
+        CheckConstraint("kind IN ('postgresql')", name="ck_data_sources_kind"),
+        Index("ix_data_sources_org_kb_active", "organization_id", "knowledge_base_id", "is_active"),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    organization_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), nullable=False)
+    knowledge_base_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), nullable=False)
+    name: Mapped[str] = mapped_column(String(200), nullable=False)
+    kind: Mapped[str] = mapped_column(String(30), nullable=False, default="postgresql")
+    encrypted_connection: Mapped[str] = mapped_column(Text, nullable=False)
+    allowed_schema: Mapped[str] = mapped_column(String(100), nullable=False)
+    allowed_tables: Mapped[list[str]] = mapped_column(JSONB, nullable=False)
+    is_active: Mapped[bool] = mapped_column(nullable=False, default=True)
+
+
 class Document(TimestampMixin, Base):
     __tablename__ = "documents"
     __table_args__ = (
@@ -300,6 +350,9 @@ class AgentRun(TimestampMixin, Base):
     prompt_version: Mapped[str] = mapped_column(String(100), nullable=False)
     provider: Mapped[str | None] = mapped_column(String(100))
     model: Mapped[str | None] = mapped_column(String(200))
+    persona_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True))
+    data_source_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True))
+    route: Mapped[str | None] = mapped_column(String(100))
     error_code: Mapped[str | None] = mapped_column(String(100))
 
 

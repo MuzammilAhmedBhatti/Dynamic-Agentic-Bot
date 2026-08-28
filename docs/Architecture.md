@@ -1,8 +1,8 @@
 # Architecture
 
-Status: APPROVED BASELINE - Milestone 2 implemented
-Last updated: 2026-08-27
-Decision authority: Phase 0, Phase 1, and Milestone 2 approved by the project owner
+Status: APPROVED BASELINE - Milestone 3 implemented, acceptance in progress
+Last updated: 2026-08-28
+Decision authority: Phase 0 through Milestone 3 approved by the project owner
 
 ## 1. Architectural drivers
 
@@ -420,3 +420,30 @@ Deferred deployment, retention, provider-policy, connector-network, and financia
 ## 16. Milestone 2 implementation boundary
 
 The working slice now comprises authenticated tenant-scoped KBs and PDF uploads; local replaceable object storage; deterministic PyMuPDF extraction/rendering; page-preserving recursive chunks; Vertex embedding, Pinecone, and Gemini adapters; PostgreSQL metadata authorization; a typed six-node LangGraph; grounded/unanswerable responses; exact citation previews; persisted allowlisted WebSocket trace events; and usable KB/chat web surfaces. Test fakes are enabled only in `APP_ENV=test`; managed mode requires ADC and Pinecone configuration. Ingestion currently runs as an in-process background task and local storage is development-only. Durable workers, Cloud Storage, OCR implementation, reranking, and deployment remain later work.
+
+## 17. Milestone 3 product-intelligence architecture
+
+```mermaid
+flowchart TD
+  Start([START]) --> Guard[Input and Authorization Guard]
+  Guard --> Persona[PersonaSelector]
+  Persona --> Router[Typed Intent Router]
+  Router --> Doc[DocumentNode]
+  Doc --> DB[DatabaseNode when selected]
+  DB --> Math[MathNode when selected]
+  Math --> Suggest[SuggestionNode]
+  Suggest --> Format[Unified Formatter]
+  Format --> End([END])
+  Doc --> Pine[(Pinecone plus PostgreSQL reauthorization)]
+  DB --> Schema[Approved schema discovery]
+  Schema --> Generate[LLM SQL proposal]
+  Generate --> AST[SQLGlot AST policy]
+  AST --> ReadOnly[Read-only transaction plus timeout and limit]
+  Math --> Ops[Allowlisted deterministic operations]
+  Persona --> Registry[Persona registry]
+  Router --> Gateway[Provider-neutral LLM registry]
+```
+
+Milestone 3 implements a typed `PersonaSelector -> Router -> DocumentNode -> DatabaseNode -> MathNode -> SuggestionNode -> Formatter` graph. Route nodes are composable and no model receives connection access. The PostgreSQL connector decrypts credentials only inside the backend, discovers only allowlisted schema/table metadata, validates a single SELECT/read-only CTE AST, qualifies approved tables, limits rows, sets a statement timeout, and executes inside a read-only transaction. The application database and queryable demo data are logically separated into application tables and the `demo_business` schema; production sources should additionally use independently provisioned read-only roles/databases.
+
+The LLM registry allowlists provider/model pairs. Vertex AI Gemini remains available and primary; OpenAI and Anthropic capabilities are visible but unavailable until real adapters and credentials are configured. Manual selections are server-validated, while persona defaults drive AUTO behavior. Trace summaries now include only allowlisted persona, route, row-count, operation, citation-count, provider/model, timing, and status metadata.

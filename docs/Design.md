@@ -1,7 +1,7 @@
 # Detailed Design
 
-Status: APPROVED BASELINE - Milestone 2 implemented
-Last updated: 2026-08-27
+Status: APPROVED BASELINE - Milestone 3 implemented
+Last updated: 2026-08-28
 
 This document turns `Architecture.md` into implementable contracts and records the Milestone 2 implementation.
 
@@ -480,4 +480,13 @@ Implemented contracts also include test-only session creation, KB create/list, d
 - Cloud SQL HA, PITR, automated backups, restore tests, connection pool/proxy; cross-region replicas depend on RTO/RPO.
 - Artifact Registry images are immutable by digest; CI signs/attests and controlled deployment promotes the same image digest.
 
-No kind, Helm, Jenkins, or GKE deployment assets are created in Milestone 2; they belong to the deployment milestone.
+No kind, Helm, Jenkins, or GKE deployment assets are created in Milestone 3; they belong to the deployment milestone.
+
+## 20. Implemented Milestone 3 contracts
+
+- `GET /organizations/{organization_id}/personas` returns three active built-ins with stable IDs, allowed routes, and provider/model defaults. Chat-run creation accepts `persona_id`, `provider`, `model`, and `data_source_id`; every selection is validated under the current tenant before execution.
+- `GET/POST /organizations/{organization_id}/data-sources` lists safe metadata and registers a PostgreSQL source. The request credential is validated, encrypted with Fernet, never returned, and decrypted only within the connector boundary. Staging/production require an explicit encryption key compatible with Secret Manager delivery.
+- The SQL proposal sees only approved schema metadata. SQLGlot enforces one SELECT/read-only CTE, approved schema/tables/functions, no comments or stacked statements, and an enforced row limit. Execution adds a timeout and read-only transaction, then returns bounded JSON-safe rows and evidence metadata without SQL or credentials in the public contract.
+- Math requests use the explicit operation/value/unit contract. Supported operations are add, subtract, multiply, divide, percentage, percentage change, ratio, average, sum, difference, min, and max. No source string, Python expression, `eval`, `exec`, shell, filesystem, or network capability exists.
+- The unified result contains answer, support, persona, provider/model, ordered routes, document sources, calculations, database evidence, suggestions, versions, and trace ID. Irrelevant evidence arrays remain empty; document citation and preview contracts are unchanged.
+- The Next.js chat workspace provides AUTO/manual persona and model controls, approved source selection/registration, database evidence, calculations, suggestion buttons, exact-page preview, and safe execution trace. The credential input is a password field and is cleared after successful registration.

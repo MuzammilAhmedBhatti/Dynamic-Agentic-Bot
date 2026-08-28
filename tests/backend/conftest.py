@@ -32,7 +32,7 @@ async def clean_database() -> AsyncIterator[None]:
             await session.execute(
                 text(
                     "TRUNCATE TABLE agent_trace_events, agent_runs, document_chunks, "
-                    "document_pages, documents, knowledge_bases, role_permissions, "
+                    "document_pages, documents, data_sources, personas, knowledge_bases, role_permissions, "
                     "membership_roles, permissions, roles, organization_memberships, "
                     "users, organizations RESTART IDENTITY CASCADE"
                 )

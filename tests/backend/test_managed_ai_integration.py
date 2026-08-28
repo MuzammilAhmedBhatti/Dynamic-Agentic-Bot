@@ -19,12 +19,14 @@ async def test_real_vertex_and_pinecone_path_when_explicitly_enabled() -> None:
             "set RUN_MANAGED_AI_INTEGRATION=1 with ADC and Pinecone credentials"
         )
     project = os.environ["GOOGLE_CLOUD_PROJECT"]
-    location = os.getenv("GOOGLE_CLOUD_LOCATION", "us-central1")
+    default_location = os.getenv("GOOGLE_CLOUD_LOCATION", "us-central1")
+    embedding_location = os.getenv("VERTEX_EMBEDDING_LOCATION", default_location)
+    gemini_location = os.getenv("VERTEX_GEMINI_LOCATION", default_location)
     embedding_model = os.getenv("VERTEX_EMBEDDING_MODEL", "gemini-embedding-001")
     dimension = int(os.getenv("VERTEX_EMBEDDING_DIMENSION", "768"))
     embeddings = VertexEmbeddingProvider(
         project=project,
-        location=location,
+        location=embedding_location,
         model=embedding_model,
         dimension=dimension,
         timeout_seconds=30,
@@ -49,7 +51,7 @@ async def test_real_vertex_and_pinecone_path_when_explicitly_enabled() -> None:
     )
     llm = VertexGeminiProvider(
         project=project,
-        location=location,
+        location=gemini_location,
         model=os.getenv("VERTEX_GEMINI_MODEL", "gemini-2.5-flash"),
         timeout_seconds=30,
         max_attempts=2,

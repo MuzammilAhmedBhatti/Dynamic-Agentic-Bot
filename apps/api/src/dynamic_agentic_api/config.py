@@ -30,9 +30,16 @@ class Settings(BaseSettings):
     ai_provider_mode: Literal["managed", "fake"] = "managed"
     google_cloud_project: str | None = None
     google_cloud_location: str = "us-central1"
+    vertex_embedding_location: str | None = None
+    vertex_gemini_location: str | None = None
     vertex_embedding_model: str = "gemini-embedding-001"
     vertex_embedding_dimension: int = Field(default=768, ge=128, le=3072)
     vertex_gemini_model: str = "gemini-2.5-flash"
+    openai_api_key: str | None = None
+    anthropic_api_key: str | None = None
+    data_source_encryption_key: str | None = None
+    database_query_timeout_ms: int = Field(default=5000, ge=250, le=30000)
+    database_query_row_limit: int = Field(default=100, ge=1, le=1000)
     pinecone_api_key: str | None = None
     pinecone_index: str | None = None
     pinecone_index_host: str | None = None
@@ -63,6 +70,14 @@ class Settings(BaseSettings):
         return self.max_pdf_size_mb * 1024 * 1024
 
     @property
+    def resolved_vertex_embedding_location(self) -> str:
+        return self.vertex_embedding_location or self.google_cloud_location
+
+    @property
+    def resolved_vertex_gemini_location(self) -> str:
+        return self.vertex_gemini_location or self.google_cloud_location
+
+    @property
     def managed_ai_configured(self) -> bool:
         return bool(self.google_cloud_project and self.pinecone_api_key and self.pinecone_index)
 
@@ -87,6 +102,8 @@ class Settings(BaseSettings):
                 raise ValueError("staging and production CORS origins must use HTTPS")
             if self.oidc_issuer_url and not self.oidc_issuer_url.startswith("https://"):
                 raise ValueError("OIDC issuer must use HTTPS outside development")
+            if not self.data_source_encryption_key:
+                raise ValueError("DATA_SOURCE_ENCRYPTION_KEY is required outside local/test use")
         return self
 
 

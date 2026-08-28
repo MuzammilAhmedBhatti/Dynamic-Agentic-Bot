@@ -2,7 +2,7 @@
 
 Status: ACTIVE
 Owner: Engineering
-Last updated: 2026-08-27 (Milestone 2)
+Last updated: 2026-08-28 (Milestone 3)
 
 These rules are non-negotiable unless an explicit, documented architecture decision approved by the project owner replaces one. In conflicts, use this order: correctness, security, data isolation, reliability, mandatory product requirements, grounding and citation quality, scalability, maintainability, testability, observability, performance, cost, user experience, curriculum completeness, polish.
 
@@ -86,7 +86,9 @@ These rules are non-negotiable unless an explicit, documented architecture decis
 
 ## Current milestone boundary
 
-1. Milestone 2 is complete only after its local quality gates, migration round trip, documentation, and repository publication pass.
-2. The implemented core AI path may be maintained and corrected, but do not start conversations/persona administration, DB/math agents, AI Lab, Evaluation Center, production workers, or deployment without Milestone 3/4 approval.
-3. Do not create kind, Helm, Jenkins, GKE, or cloud infrastructure assets during Milestone 2.
+1. Milestone 3 is complete only after local and managed regression gates, real E2E scenarios, documentation, and repository publication pass.
+2. Maintain the implemented persona/document/database/math product, but do not start AI Lab, Evaluation Center, production workers, or deployment without Milestone 4 approval.
+3. Do not create kind, Helm, Jenkins, GKE, or cloud infrastructure assets during Milestone 3.
 4. Managed AI adapters use real Vertex AI/Pinecone implementations in managed mode; deterministic fakes are test-only and must be impossible to enable in staging/production.
+5. Database source credentials are write-only, encrypted at rest, omitted from responses/logs/traces, and delivered from Secret Manager in production. All model-generated SQL is untrusted until AST policy passes and backend read-only execution begins.
+6. Provider and model strings are server allowlisted. An unavailable adapter must fail explicitly; never fabricate a production response.
