@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import uuid
 
 import httpx
@@ -12,9 +13,7 @@ from dynamic_agentic_api.math.service import CalculationRequest, MathService
 from sqlalchemy import select
 from test_core_ai_platform import create_kb, seed_tenant
 
-DATABASE_URL = (
-    "postgresql+asyncpg://dynamic_agentic:phase1_test@127.0.0.1:54329/dynamic_agentic"
-)
+DATABASE_URL = os.environ["DATABASE_URL"]
 
 
 async def register_demo_source(
