@@ -85,6 +85,17 @@ async def test_persona_auto_manual_and_model_validation(
     assert automatic.json()["route"] == ["math"]
     assert automatic.json()["calculations"][0]["result"] == 25
 
+    combined = await execute_question(
+        client,
+        organization_id,
+        user_id,
+        kb_id,
+        "According to this PDF, what is the percentage increase from 240 to 300?",
+    )
+    assert combined.status_code == 200, combined.text
+    assert combined.json()["route"] == ["document", "math"]
+    assert combined.json()["calculations"][0]["result"] == 25
+
     manual = await execute_question(
         client,
         organization_id,
