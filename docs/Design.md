@@ -490,3 +490,25 @@ No kind, Helm, Jenkins, or GKE deployment assets are created in Milestone 3; the
 - Math requests use the explicit operation/value/unit contract. Supported operations are add, subtract, multiply, divide, percentage, percentage change, ratio, average, sum, difference, min, and max. No source string, Python expression, `eval`, `exec`, shell, filesystem, or network capability exists.
 - The unified result contains answer, support, persona, provider/model, ordered routes, document sources, calculations, database evidence, suggestions, versions, and trace ID. Irrelevant evidence arrays remain empty; document citation and preview contracts are unchanged.
 - The Next.js chat workspace provides AUTO/manual persona and model controls, approved source selection/registration, database evidence, calculations, suggestion buttons, exact-page preview, and safe execution trace. The credential input is a password field and is cleared after successful registration.
+
+## 21. Milestone 4 implementation design
+
+### AI Lab contracts
+
+`GET /organizations/{organization_id}/ai-lab/catalog` exposes only the server allowlist and numeric limits. `POST .../ai-lab/experiments` accepts a lab type, allowlisted algorithm, safe dataset identifier, bounded JSON parameters, and seed. Implemented labs are Data Profile; Linear/Logistic Regression; Decision Tree; Random Forest; KNN; K-Means; PCA; a small Iris PyTorch MLP; TF-IDF sentiment classification; and optional tiny pretrained Transformer inference. The Transformer is local-cache-first and returns an honest unavailable result when no cached model exists.
+
+Results include a beginner-facing explanation, task metrics, isolation metadata, library versions, dataset version, parameters, seed, duration, status, and timestamps. Large artifacts are excluded from PostgreSQL; `ArtifactStore` is the seam for future object storage. Small CPU jobs run under a semaphore and wall-clock timeout. Durable background experiment queues remain a Milestone 5 scale concern.
+
+### Evaluation contracts
+
+`POST .../evaluations` runs allowlisted RAG, RAG-configuration, persona/router, database, math, LLM, prompt-version, or security benchmarks and persists the result as an `Experiment`. `GET .../experiments` and `GET .../experiments/{id}` are organization filtered. RAG metrics deterministically score Hit/Recall@K, MRR, key-fact correctness/groundedness, abstention, citation presence/exact-page/source correctness, unsupported answers, and a mandatory zero cross-tenant counter. Configuration comparison uses an isolated in-memory corpus and never writes Pinecone.
+
+Persona/router cases cover Legal, Financial and General personas plus DOCUMENT, DATABASE, MATH, DOCUMENT+MATH, and DATABASE+MATH routes. Database cases cover aggregations, grouping, filtering, dates and joins; mutations, catalogs, file reads, stacked SQL, comments and foreign schemas fail at AST validation. Math uses exact allowlisted operations. LLM evaluation records measured latency, success/failure and repeated-plan consistency; token/cost values remain null when reliable usage is unavailable. Prompt evaluation references version IDs only and never returns hidden prompt content.
+
+### Frontend, hardening, and observability
+
+The existing shell now renders interactive AI Lab and Evaluation pages. Both reuse the local authenticated-session component. AI Lab provides type, algorithm, row, epoch and seed controls; Evaluation provides benchmark/top-K/configuration selection and historical runs. Metric cards render exact values, bounded score bars, arrays, confusion matrices, losses and comparisons without a chart dependency.
+
+Hardening adds a connector host allowlist, PDF extension validation, document chunk ceiling, experiment row/epoch/runtime/concurrency limits, local-cache-only Transformer default, sanitized failures, and tenant-filtered result access. Structured completion logs include only safe IDs, categories, status and duration. Existing production provider/model, embedding dimension, Pinecone namespace, graph, auth, and page-citation contracts are unchanged.
+
+The trusted router also normalizes model plans against selected sources: an ambiguous model-selected DATABASE route without a registered source falls back to DOCUMENT, while an explicit database request remains a database request and produces the normal source-required error. DATABASE and MATH routes deterministically map to Financial Analyst in AUTO mode; manual persona selection remains authoritative and incompatible manual routes are still denied. This prevents managed-model classification variance from breaking ordinary document questions without granting any additional tool.

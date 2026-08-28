@@ -373,3 +373,44 @@ class AgentTraceEvent(Base):
     duration_ms: Mapped[int | None] = mapped_column(Integer)
     safe_summary: Mapped[dict[str, object]] = mapped_column(JSONB, nullable=False, default=dict)
     occurred_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+
+class Experiment(TimestampMixin, Base):
+    __tablename__ = "experiments"
+    __table_args__ = (
+        CheckConstraint(
+            "status IN ('queued', 'running', 'completed', 'failed')",
+            name="ck_experiments_status",
+        ),
+        CheckConstraint(
+            "lab_type IN ('data', 'classical_ml', 'deep_learning', 'nlp', "
+            "'transformer', 'rag_evaluation', 'agent_evaluation', 'security_evaluation')",
+            name="ck_experiments_lab_type",
+        ),
+        Index("ix_experiments_org_created", "organization_id", "created_at"),
+        Index("ix_experiments_org_status", "organization_id", "status"),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    organization_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False
+    )
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
+    lab_type: Mapped[str] = mapped_column(String(50), nullable=False)
+    algorithm: Mapped[str] = mapped_column(String(100), nullable=False)
+    dataset: Mapped[str] = mapped_column(String(200), nullable=False)
+    dataset_version: Mapped[str] = mapped_column(String(100), nullable=False)
+    parameters: Mapped[dict[str, object]] = mapped_column(JSONB, nullable=False, default=dict)
+    metrics: Mapped[dict[str, object]] = mapped_column(JSONB, nullable=False, default=dict)
+    artifact_metadata: Mapped[dict[str, object]] = mapped_column(
+        JSONB, nullable=False, default=dict
+    )
+    library_versions: Mapped[dict[str, object]] = mapped_column(JSONB, nullable=False, default=dict)
+    random_seed: Mapped[int] = mapped_column(Integer, nullable=False)
+    status: Mapped[str] = mapped_column(String(20), nullable=False, default="queued")
+    duration_ms: Mapped[int | None] = mapped_column(Integer)
+    started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    error_code: Mapped[str | None] = mapped_column(String(100))

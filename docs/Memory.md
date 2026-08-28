@@ -1,7 +1,7 @@
 # Project Memory
 
 Last updated: 2026-08-28
-Current milestone: Milestone 3 implemented and under final acceptance; Milestone 4 not authorized
+Current milestone: Milestone 4 implemented and under final acceptance; Milestone 5 not authorized
 
 ## Product and authority
 
@@ -37,11 +37,21 @@ Current milestone: Milestone 3 implemented and under final acceptance; Milestone
 - Encrypted, tenant/KB-scoped PostgreSQL source registry; approved-schema discovery; SQLGlot SELECT/CTE enforcement; read-only bounded execution; deterministic `demo_business` data.
 - Deterministic calculation service, unified answer/evidence contract, server allowlisted provider/model selection, unavailable-provider reporting, expanded safe trace events, and full chat-workspace integration.
 
+## Implemented in Milestone 4
+
+- Tenant-scoped, bounded Data, Classical ML, PyTorch Deep Learning, NLP, and optional cached Transformer labs, isolated from production KB/vector/data-source state.
+- PostgreSQL experiment persistence records dataset/version, algorithm, parameters, seed, library versions, metrics, status, duration, timestamps, and artifact metadata.
+- Deterministic RAG/citation/abstention and configuration comparison; persona/router; database; math; LLM/prompt-version; and adversarial security evaluations.
+- AI Lab and Evaluation web workspaces with experiment controls, metric views, and authorized history.
+- Connector host allowlist, PDF extension validation, chunk ceiling, experiment resource limits, indirect injection tests, and safe structured completion events.
+- Public-repository hygiene removed the two local source PDFs from Git tracking and explicitly ignores them; local copies remain available to the owner.
+
 ## Current limitations and next boundaries
 
 - Local object storage and in-process FastAPI background ingestion are development implementations. Cloud Storage, durable Pub/Sub workers, distributed trace fan-out, scanner integration, and production OCR belong to later milestones.
 - Live Vertex/Pinecone/Gemini validation requires user-provided GCP ADC/project/location, Pinecone key/index/host, and matching embedding dimension. CI uses safe fakes.
-- Reranking, hybrid retrieval, conversation persistence, tenant-authored persona/provider administration, MongoDB, AI Lab, Evaluation Center, and GKE deployment are not implemented.
+- Reranking, hybrid retrieval, conversation persistence, tenant-authored persona/provider administration, MongoDB, durable experiment workers, richer curriculum labs, and GKE deployment are not implemented.
 - Exact region, topology/capacity, RTO/RPO/SLOs, retention, provider data policy, connector networking, and financial dataset remain deferred to their implementation milestones.
 - OpenAI and Anthropic are cataloged as unavailable capability targets; no production adapters or fake responses exist for them. PostgreSQL is the only production structured connector.
-- Do not begin Milestone 4 without explicit owner approval.
+- Production remains Vertex `text-embedding-005` at 768 dimensions in `us-central1`, the existing Pinecone dense index, and Vertex Gemini `gemini-3.5-flash` at `global`.
+- Do not begin Milestone 5 deployment/observability infrastructure without explicit owner approval.

@@ -98,3 +98,28 @@ export interface TraceEvent {
   duration_ms?: number | null;
   safe_summary?: Record<string, string | number | boolean>;
 }
+
+export interface Experiment {
+  id: string;
+  organization_id: string;
+  user_id: string;
+  lab_type: string;
+  algorithm: string;
+  dataset: string;
+  dataset_version: string;
+  parameters: Record<string, unknown>;
+  metrics: Record<string, unknown>;
+  artifact_metadata: Record<string, unknown>;
+  library_versions: Record<string, unknown>;
+  random_seed: number;
+  status: "running" | "completed" | "failed";
+  duration_ms: number | null;
+  error_code: string | null;
+  created_at: string;
+}
+
+export interface LabCatalog {
+  algorithms: Record<string, string[]>;
+  datasets: string[];
+  limits: Record<string, number>;
+}

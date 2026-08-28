@@ -148,7 +148,7 @@ async def execute_chat_run(
         run_id=run.id,
         trace_id=run.trace_id,
         answer=result.answer,
-        support=result.support,  # type: ignore[arg-type]
+        support=result.support,
         persona=PersonaResponse(
             id=result.persona.id,
             slug=result.persona.slug,

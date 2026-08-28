@@ -1,7 +1,9 @@
 import { notFound } from "next/navigation";
 
 import { ChatWorkspace } from "@/components/chat-workspace";
+import { EvaluationWorkspace } from "@/components/evaluation-workspace";
 import { FoundationState } from "@/components/foundation-state";
+import { AiLabWorkspace } from "@/components/ai-lab-workspace";
 import { KnowledgeBaseWorkspace } from "@/components/knowledge-base-workspace";
 import { findSection, sections } from "@/lib/sections";
 
@@ -15,5 +17,7 @@ export default async function SectionPage({ params }: Readonly<{ params: Promise
   if (!section) notFound();
   if (slug === "chat") return <ChatWorkspace />;
   if (slug === "knowledge-base") return <KnowledgeBaseWorkspace />;
+  if (slug === "ai-lab") return <AiLabWorkspace />;
+  if (slug === "evaluation") return <EvaluationWorkspace />;
   return <FoundationState section={section} />;
 }

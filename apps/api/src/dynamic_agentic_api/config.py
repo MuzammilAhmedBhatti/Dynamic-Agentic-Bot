@@ -40,6 +40,7 @@ class Settings(BaseSettings):
     data_source_encryption_key: str | None = None
     database_query_timeout_ms: int = Field(default=5000, ge=250, le=30000)
     database_query_row_limit: int = Field(default=100, ge=1, le=1000)
+    data_source_allowed_hosts: str = "localhost,127.0.0.1,postgres"
     pinecone_api_key: str | None = None
     pinecone_index: str | None = None
     pinecone_index_host: str | None = None
@@ -47,11 +48,19 @@ class Settings(BaseSettings):
     external_call_max_attempts: int = Field(default=3, ge=1, le=5)
     max_pdf_size_mb: int = Field(default=25, ge=1, le=250)
     max_pdf_pages: int = Field(default=200, ge=1, le=2000)
+    max_document_chunks: int = Field(default=5000, ge=100, le=50000)
     chunk_size_chars: int = Field(default=1800, ge=200, le=12000)
     chunk_overlap_chars: int = Field(default=240, ge=0, le=2000)
     rag_top_k: int = Field(default=6, ge=1, le=20)
     rag_context_max_chars: int = Field(default=18000, ge=1000, le=100000)
     local_storage_root: Path = Path(".data/objects")
+    lab_artifact_root: Path = Path(".data/lab-artifacts")
+    lab_max_dataset_rows: int = Field(default=5000, ge=100, le=50000)
+    lab_max_epochs: int = Field(default=30, ge=1, le=100)
+    lab_max_runtime_seconds: float = Field(default=30.0, ge=1.0, le=120.0)
+    lab_max_concurrent_experiments: int = Field(default=2, ge=1, le=8)
+    transformer_model: str = "prajjwal1/bert-tiny"
+    transformer_allow_download: bool = False
 
     @property
     def cors_origin_list(self) -> list[str]:
@@ -60,6 +69,10 @@ class Settings(BaseSettings):
     @property
     def allowed_host_list(self) -> list[str]:
         return _split_csv(self.allowed_hosts)
+
+    @property
+    def data_source_allowed_host_list(self) -> list[str]:
+        return [host.casefold() for host in _split_csv(self.data_source_allowed_hosts)]
 
     @property
     def expose_openapi(self) -> bool:

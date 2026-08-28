@@ -113,6 +113,12 @@ class IngestionService:
                 code="NO_USABLE_TEXT",
                 message="No usable text was extracted from the document.",
             )
+        if len(chunks) > self._settings.max_document_chunks:
+            raise AppError(
+                status_code=422,
+                code="DOCUMENT_CHUNK_LIMIT_EXCEEDED",
+                message="The document exceeds the configured chunk limit.",
+            )
 
         # Re-indexing is replacement, not additive: remove prior vectors before
         # deterministic chunk IDs are regenerated so stale chunks cannot survive.

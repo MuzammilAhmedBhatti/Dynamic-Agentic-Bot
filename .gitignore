@@ -2,6 +2,10 @@
 .env
 .env.*
 !.env.example
+
+# Local source specifications/curriculum may be proprietary; keep them out of the public repo.
+Dynamic Agentic Systems.pdf
+AI_Training_Document_Intern (1).pdf
 *.pem
 *.key
 *service-account*.json

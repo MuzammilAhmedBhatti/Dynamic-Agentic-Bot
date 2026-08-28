@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import uuid
+from datetime import datetime
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
@@ -175,3 +176,58 @@ class TestSessionRequest(BaseModel):
 class TestSessionResponse(BaseModel):
     authenticated: Literal[True] = True
     user_id: uuid.UUID
+
+
+LabType = Literal["data", "classical_ml", "deep_learning", "nlp", "transformer"]
+
+
+class LabExperimentCreate(BaseModel):
+    lab_type: LabType
+    algorithm: str = Field(min_length=1, max_length=100)
+    dataset: str = Field(default="builtin", min_length=1, max_length=200)
+    parameters: dict[str, object] = Field(default_factory=dict)
+    random_seed: int = Field(default=42, ge=0, le=2_147_483_647)
+
+
+class EvaluationRunCreate(BaseModel):
+    benchmark: Literal[
+        "rag",
+        "rag_comparison",
+        "persona_router",
+        "database",
+        "math",
+        "security",
+        "llm",
+        "prompts",
+    ]
+    parameters: dict[str, object] = Field(default_factory=dict)
+    random_seed: int = Field(default=42, ge=0, le=2_147_483_647)
+
+
+class ExperimentResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    organization_id: uuid.UUID
+    user_id: uuid.UUID
+    lab_type: str
+    algorithm: str
+    dataset: str
+    dataset_version: str
+    parameters: dict[str, object]
+    metrics: dict[str, object]
+    artifact_metadata: dict[str, object]
+    library_versions: dict[str, object]
+    random_seed: int
+    status: str
+    duration_ms: int | None
+    started_at: datetime | None
+    completed_at: datetime | None
+    error_code: str | None
+    created_at: datetime
+
+
+class LabCatalogResponse(BaseModel):
+    algorithms: dict[str, list[str]]
+    datasets: list[str]
+    limits: dict[str, int | float]

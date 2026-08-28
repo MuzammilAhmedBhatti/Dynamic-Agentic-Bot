@@ -16,9 +16,12 @@ dependencies = [
   "pyjwt[crypto]>=2.10,<3",
   "pymupdf>=1.26,<2",
   "python-multipart>=0.0.20,<1",
+  "scikit-learn>=1.7,<2",
   "sqlalchemy[asyncio]>=2.0.41,<3",
   "sqlglot>=27,<29",
   "structlog>=25.4,<26",
+  "torch>=2.7,<3",
+  "transformers>=4.55,<6",
   "uvicorn[standard]>=0.35,<1",
 ]
 
@@ -59,5 +62,16 @@ packages = ["dynamic_agentic_api"]
 plugins = ["pydantic.mypy"]
 
 [[tool.mypy.overrides]]
-module = "asyncpg.*"
+module = ["asyncpg.*", "sklearn.*"]
 ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = [
+    "pymupdf",
+    "pymupdf.*",
+    "sqlglot",
+    "sqlglot.*",
+    "dynamic_agentic_api.ingestion.pdf",
+    "dynamic_agentic_api.data_sources.security",
+]
+disallow_untyped_calls = false

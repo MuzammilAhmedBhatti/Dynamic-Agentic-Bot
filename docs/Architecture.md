@@ -447,3 +447,67 @@ flowchart TD
 Milestone 3 implements a typed `PersonaSelector -> Router -> DocumentNode -> DatabaseNode -> MathNode -> SuggestionNode -> Formatter` graph. Route nodes are composable and no model receives connection access. The PostgreSQL connector decrypts credentials only inside the backend, discovers only allowlisted schema/table metadata, validates a single SELECT/read-only CTE AST, qualifies approved tables, limits rows, sets a statement timeout, and executes inside a read-only transaction. The application database and queryable demo data are logically separated into application tables and the `demo_business` schema; production sources should additionally use independently provisioned read-only roles/databases.
 
 The LLM registry allowlists provider/model pairs. Vertex AI Gemini remains available and primary; OpenAI and Anthropic capabilities are visible but unavailable until real adapters and credentials are configured. Manual selections are server-validated, while persona defaults drive AUTO behavior. Trace summaries now include only allowlisted persona, route, row-count, operation, citation-count, provider/model, timing, and status metadata.
+
+## 18. Milestone 4 AI Lab and Evaluation architecture
+
+The AI Lab is a tenant-scoped sidecar domain, not a node in the production LangGraph. It shares authentication, PostgreSQL, safe settings, logging, and provider interfaces, while its generated/built-in datasets and local evaluation vectors cannot mutate production knowledge bases, Pinecone namespaces, data sources, or chat state. Runs are bounded by dataset, epoch, wall-clock, and concurrency settings. Metadata and small JSON metrics are stored in PostgreSQL; the `ArtifactStore` interface provides a development-only local JSON implementation for future object-storage artifacts without placing model binaries in the database.
+
+```mermaid
+flowchart LR
+  User[Authenticated tenant user] --> Web[Next.js product UI]
+  Web --> API[FastAPI authz boundary]
+  API --> Prod[Production LangGraph]
+  API --> Lab[Isolated AI Lab]
+  API --> Eval[Evaluation Engine]
+  Prod --> Tools[Document, DB, Math tools]
+  Tools --> Managed[Vertex, Gemini, Pinecone]
+  Lab --> Data[Generated and sklearn datasets]
+  Lab --> CPU[scikit-learn and bounded PyTorch CPU]
+  Lab --> HF[Optional cached tiny Transformer]
+  Eval --> RAG[RAG and configuration metrics]
+  Eval --> Agent[Persona, route, DB, math, LLM metrics]
+  Eval --> Safety[Injection and policy metrics]
+  Lab --> Results[(Tenant experiment rows)]
+  Eval --> Results
+  Results --> Web
+```
+
+```mermaid
+flowchart TD
+  Request[Experiment request] --> Auth[Membership plus chat.execute authorization]
+  Auth --> Allow[Lab and algorithm allowlist]
+  Allow --> Limits[Rows, epochs, runtime, concurrency bounds]
+  Limits --> Runner[CPU worker thread]
+  Runner --> DataLab[Data profiling and preprocessing]
+  Runner --> Classical[Regression, classification, clustering, PCA]
+  Runner --> DL[Small PyTorch MLP]
+  Runner --> NLP[TF-IDF classifier]
+  Runner --> Transformer[Local-cache-first inference]
+  DataLab --> Persist[Metrics, seed, parameters, versions]
+  Classical --> Persist
+  DL --> Persist
+  NLP --> Persist
+  Transformer --> Persist
+  Persist --> History[Authorized tenant history]
+```
+
+```mermaid
+flowchart TD
+  Cases[Versioned deterministic cases] --> Observe[Retrieved items, answers, citations, routes]
+  Observe --> Retrieval[Hit and Recall at K, MRR]
+  Observe --> Answer[Correctness, groundedness, abstention]
+  Observe --> Citation[Presence, exact page and source]
+  Observe --> Agents[Persona, route, SQL and math accuracy]
+  Observe --> Security[Injection, tenant and tool policy]
+  Configs[Isolated TF-IDF evaluation corpus] --> Compare[Chunk, overlap and top-K comparison]
+  Retrieval --> Run[(Experiment result)]
+  Answer --> Run
+  Citation --> Run
+  Agents --> Run
+  Security --> Run
+  Compare --> Run
+```
+
+Security boundaries remain server-derived: experiment organization/user IDs come from the authenticated context, history queries always include `organization_id`, and failures return the existing sanitized envelope. Connector destinations are restricted to `DATA_SOURCE_ALLOWED_HOSTS`; uploaded documents require PDF MIME, `.pdf` extension, signature, size and page bounds; ingestion also caps chunk count. Document/database values remain untrusted evidence, and no lab exposes arbitrary files, URLs, Python, shell, model training code, or production-vector writes.
+
+Application-level observability emits structured completion events with tenant-safe experiment ID, category, algorithm/benchmark, status, and duration. Existing request correlation and graph stage timings cover production operations. Prometheus, Grafana, ELK, OpenTelemetry collectors, Kubernetes, GKE, Helm, and Jenkins remain Milestone 5 work and are not introduced here.

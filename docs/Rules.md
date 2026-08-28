@@ -86,9 +86,13 @@ These rules are non-negotiable unless an explicit, documented architecture decis
 
 ## Current milestone boundary
 
-1. Milestone 3 is complete only after local and managed regression gates, real E2E scenarios, documentation, and repository publication pass.
-2. Maintain the implemented persona/document/database/math product, but do not start AI Lab, Evaluation Center, production workers, or deployment without Milestone 4 approval.
-3. Do not create kind, Helm, Jenkins, GKE, or cloud infrastructure assets during Milestone 3.
+1. Milestone 4 is complete only after production regression, lab/evaluation/security, managed integration, E2E, documentation, and repository publication gates pass.
+2. AI Lab experiments must remain tenant-scoped, reproducible, resource-bounded, and unable to mutate production KB/vector/data-source state.
+3. Do not create kind, Helm, Jenkins, GKE, or cloud/observability infrastructure during Milestone 4; those belong to unapproved Milestone 5.
 4. Managed AI adapters use real Vertex AI/Pinecone implementations in managed mode; deterministic fakes are test-only and must be impossible to enable in staging/production.
 5. Database source credentials are write-only, encrypted at rest, omitted from responses/logs/traces, and delivered from Secret Manager in production. All model-generated SQL is untrusted until AST policy passes and backend read-only execution begins.
 6. Provider and model strings are server allowlisted. An unavailable adapter must fail explicitly; never fabricate a production response.
+7. Evaluation reports distinguish deterministic metrics from provider/LLM signals and never invent usage or cost values.
+8. Transformer demos are inference-only and local-cache-first by default; never claim large-model training.
+9. Experiment endpoints run only allowlisted algorithms/datasets with bounded rows, epochs, runtime, and concurrency. No arbitrary filesystem, URL, Python, shell, or code execution is permitted.
+10. User input, document text, and database values are untrusted data. Prompts are not authorization or network security boundaries.

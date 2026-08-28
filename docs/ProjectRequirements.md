@@ -222,139 +222,139 @@ The product is complete only when all DAS requirements are verified; Pinecone RA
 
 ## 10. AI Curriculum Traceability Matrix
 
-Classification meanings: `PRODUCTION` is a real platform capability; `AI_LAB` is an isolated reproducible demonstration; `EVALUATION` measures/compares behavior; `DOCUMENTATION` teaches or explains a concept. Status `PLANNED` means mapped in Phase 0 but not implemented. Items 1-4 are numbered process rules in the PDF and are included to avoid silently omitting any numbered item.
+Classification meanings: `PRODUCTION` is a real platform capability; `AI_LAB` is an isolated reproducible demonstration; `EVALUATION` measures/compares behavior; `DOCUMENTATION_ONLY` teaches or explains a concept. Status `PLANNED` means mapped in Phase 0 but not implemented. Items 1-4 are numbered process rules in the PDF and are included to avoid silently omitting any numbered item.
 
 | Topic | Concept | Classification | Project location | Implementation / demonstration | Status |
 |---:|---|---|---|---|---|
-| 1 | Practice every concept independently and create examples | AI_LAB + DOCUMENTATION | AI Lab guides / contributor guide | Guided exercises, extension prompts, and evidence checklist | PLANNED |
-| 2 | Branch, commit, PR, review, then merge | DOCUMENTATION | Engineering rules / CI | Protected default branch and reviewed PR workflow | PLANNED |
-| 3 | Read full errors before asking for help | DOCUMENTATION | Contributor/debugging guide | Error-reading and diagnostic workflow | PLANNED |
-| 4 | Use Python for all training exercises | DOCUMENTATION | AI Lab conventions | Python-only training notebooks/jobs policy | PLANNED |
-| 5 | What is a Jupyter Notebook? | AI_LAB + DOCUMENTATION | AI Lab foundations | Intro notebook explaining cells, kernels, outputs, and risks | PLANNED |
-| 6 | How to use a Jupyter Notebook | AI_LAB + DOCUMENTATION | AI Lab foundations | Reproducible guided notebook with restart/run-all checks | PLANNED |
-| 7 | Python environment setup with pip and virtualenv | DOCUMENTATION | Developer setup | Isolated environment and pinned-dependency guide | IMPLEMENTED (Phase 1) |
-| 8 | Features of Python | DOCUMENTATION | AI Lab foundations | Concise mapping of Python strengths to product/lab code | PLANNED |
-| 9 | Python 2 vs Python 3 | DOCUMENTATION | AI Lab foundations | Compatibility explanation; product uses supported Python 3 | PLANNED |
-| 10 | Virtual environments and package management | PRODUCTION + DOCUMENTATION | Build and developer tooling | Reproducible isolated environments and lock files | IMPLEMENTED (Phase 1) |
-| 11 | Elements of AI | DOCUMENTATION | AI Lab foundations | AI/ML/DL system concept explainer | PLANNED |
-| 12 | Narrow AI, General AI, Super AI | DOCUMENTATION | AI Lab foundations | Scope/terminology lesson without AGI claims | PLANNED |
-| 13 | AI use cases in healthcare, finance, NLP, vision | DOCUMENTATION | AI Lab foundations | Domain examples, limits, and product finance/NLP mapping | PLANNED |
+| 1 | Practice every concept independently and create examples | AI_LAB + DOCUMENTATION_ONLY | AI Lab guides / contributor guide | Guided exercises, extension prompts, and evidence checklist | PLANNED |
+| 2 | Branch, commit, PR, review, then merge | DOCUMENTATION_ONLY | Engineering rules / CI | Protected default branch and reviewed PR workflow | PLANNED |
+| 3 | Read full errors before asking for help | DOCUMENTATION_ONLY | Contributor/debugging guide | Error-reading and diagnostic workflow | PLANNED |
+| 4 | Use Python for all training exercises | DOCUMENTATION_ONLY | AI Lab conventions | Python-only training notebooks/jobs policy | PLANNED |
+| 5 | What is a Jupyter Notebook? | AI_LAB + DOCUMENTATION_ONLY | AI Lab foundations | Intro notebook explaining cells, kernels, outputs, and risks | PLANNED |
+| 6 | How to use a Jupyter Notebook | AI_LAB + DOCUMENTATION_ONLY | AI Lab foundations | Reproducible guided notebook with restart/run-all checks | PLANNED |
+| 7 | Python environment setup with pip and virtualenv | DOCUMENTATION_ONLY | Developer setup | Isolated environment and pinned-dependency guide | IMPLEMENTED (Phase 1) |
+| 8 | Features of Python | DOCUMENTATION_ONLY | AI Lab foundations | Concise mapping of Python strengths to product/lab code | PLANNED |
+| 9 | Python 2 vs Python 3 | DOCUMENTATION_ONLY | AI Lab foundations | Compatibility explanation; product uses supported Python 3 | PLANNED |
+| 10 | Virtual environments and package management | PRODUCTION + DOCUMENTATION_ONLY | Build and developer tooling | Reproducible isolated environments and lock files | IMPLEMENTED (Phase 1) |
+| 11 | Elements of AI | DOCUMENTATION_ONLY | AI Lab foundations | AI/ML/DL system concept explainer | PLANNED |
+| 12 | Narrow AI, General AI, Super AI | DOCUMENTATION_ONLY | AI Lab foundations | Scope/terminology lesson without AGI claims | PLANNED |
+| 13 | AI use cases in healthcare, finance, NLP, vision | DOCUMENTATION_ONLY | AI Lab foundations | Domain examples, limits, and product finance/NLP mapping | PLANNED |
 | 14 | Variables, data types, operators | PRODUCTION + AI_LAB | Python services / Foundations Lab | Typed code examples and exercises | PLANNED |
 | 15 | Control flow: loops and conditionals | PRODUCTION + AI_LAB | Python services / Foundations Lab | Bounded control-flow exercises and production usage | PLANNED |
 | 16 | Functions and lambda functions | PRODUCTION + AI_LAB | Python services / Foundations Lab | Pure function exercises; lambdas taught with readability limits | PLANNED |
 | 17 | Lists, tuples, sets, dictionaries | PRODUCTION + AI_LAB | Python services / Foundations Lab | Collection exercises using safe sample data | PLANNED |
 | 18 | OOP: classes and basic inheritance | PRODUCTION + AI_LAB | Provider/tool adapters / Foundations Lab | Interface and adapter examples; composition preferred where suitable | PLANNED |
-| 19 | Read Python errors and debug code | DOCUMENTATION + AI_LAB | Debugging guide / Foundations Lab | Traceback exercise and structured-error practice | PLANNED |
-| 20 | NumPy arrays, indexing, slicing, math | PRODUCTION + AI_LAB | Math/ML services / Data Lab | Deterministic vector operations and exercises | PLANNED |
-| 21 | Pandas DataFrames and Series | PRODUCTION + AI_LAB | Dataset service / Data Lab | CSV exploration and tabular transformations | PLANNED |
-| 22 | Data loading, cleaning, transformation | PRODUCTION + AI_LAB | Ingestion/dataset service / Data Lab | Versioned preprocessing with quality reports | PLANNED |
-| 23 | Exploratory Data Analysis | AI_LAB + EVALUATION | Data and EDA Lab | Schema, missingness, duplicates, statistics, plots, warnings | PLANNED |
-| 24 | Scalars, vectors, matrices and ML purpose | AI_LAB + DOCUMENTATION | Math Foundations Lab | Interactive representations tied to embeddings/models | PLANNED |
-| 25 | Matrix addition, multiplication, transpose | AI_LAB + DOCUMENTATION | Math Foundations Lab | NumPy demonstrations and shape/error checks | PLANNED |
-| 26 | Gradient descent intuition | AI_LAB + DOCUMENTATION | ML/DL Lab | Loss-surface and parameter-update visualization | PLANNED |
-| 27 | Gaussian distribution, mean, variance | PRODUCTION + AI_LAB | Math tools / Data Lab | Descriptive/distribution analysis with assumptions shown | PLANNED |
-| 28 | Mean and standard deviation | PRODUCTION + AI_LAB | Math agent / Data Lab | Tested deterministic calculations and dataset summary | PLANNED |
-| 29 | Simple and multiple linear regression | AI_LAB + EVALUATION | Classical ML Lab | Housing-style regression experiment and regression metrics | PLANNED |
+| 19 | Read Python errors and debug code | DOCUMENTATION_ONLY + AI_LAB | Debugging guide / Foundations Lab | Traceback exercise and structured-error practice | PLANNED |
+| 20 | NumPy arrays, indexing, slicing, math | PRODUCTION + AI_LAB | `ai_lab/service.py` / vector services | Deterministic vector operations and exercises | IMPLEMENTED (bounded NumPy lab operations and production vector contracts) |
+| 21 | Pandas DataFrames and Series | AI_LAB | Future Data Lab extension | CSV exploration and tabular transformations | PLANNED (not required by the implemented deterministic lab) |
+| 22 | Data loading, cleaning, transformation | PRODUCTION + AI_LAB | Ingestion / `AiLabService._data_lab` | Versioned preprocessing with quality reports | IMPLEMENTED (safe built-ins, imputation, scaling, encoding) |
+| 23 | Exploratory Data Analysis | AI_LAB + EVALUATION | `AiLabService._data_lab` / AI Lab UI | Schema, missingness, duplicates, statistics, preview | IMPLEMENTED (tabular outputs; richer plots deferred) |
+| 24 | Scalars, vectors, matrices and ML purpose | AI_LAB + DOCUMENTATION_ONLY | Math Foundations Lab | Interactive representations tied to embeddings/models | PLANNED |
+| 25 | Matrix addition, multiplication, transpose | AI_LAB + DOCUMENTATION_ONLY | Math Foundations Lab | NumPy demonstrations and shape/error checks | PLANNED |
+| 26 | Gradient descent intuition | AI_LAB + DOCUMENTATION_ONLY | ML/DL Lab | Loss-surface and parameter-update visualization | PLANNED |
+| 27 | Gaussian distribution, mean, variance | AI_LAB | Data Lab | Descriptive/distribution analysis with assumptions shown | IMPLEMENTED (seeded Gaussian fixture and statistics) |
+| 28 | Mean and standard deviation | PRODUCTION + AI_LAB | Math agent / Data Lab | Tested deterministic calculations and dataset summary | IMPLEMENTED (average tool and Data Lab summaries) |
+| 29 | Simple and multiple linear regression | AI_LAB + EVALUATION | Classical ML Lab | Diabetes regression experiment and regression metrics | IMPLEMENTED (`linear_regression` experiment) |
 | 30 | Cost function and gradient descent | AI_LAB + EVALUATION | Classical ML Lab | Manual loss/optimization comparison | PLANNED |
 | 31 | Overfitting, underfitting, L1/L2 regularization | AI_LAB + EVALUATION | Classical ML Lab | Learning curves and regularization comparison | PLANNED |
-| 32 | Sigmoid function and decision boundary | AI_LAB + DOCUMENTATION | Classical ML Lab | Logistic curve and boundary visualization | PLANNED |
+| 32 | Sigmoid function and decision boundary | AI_LAB + DOCUMENTATION_ONLY | Classical ML Lab | Logistic curve and boundary visualization | PLANNED |
 | 33 | Multi-class: one-vs-rest and softmax | AI_LAB + EVALUATION | Classical ML Lab | Strategy comparison with appropriate metrics | PLANNED |
-| 34 | Accuracy, precision, recall, F1, ROC-AUC | EVALUATION + AI_LAB | Evaluation Center / ML Lab | Metric computation with imbalance guidance | PLANNED |
-| 35 | Decision trees: Gini and entropy | AI_LAB + EVALUATION | Classical ML Lab | Tree construction/split comparison | PLANNED |
-| 36 | Pruning and overfitting mitigation | AI_LAB + EVALUATION | Classical ML Lab | Depth/pruning validation curves | PLANNED |
-| 37 | Random Forest: bagging and feature randomness | AI_LAB + EVALUATION | Classical ML Lab | Ensemble experiment and comparison | PLANNED |
+| 34 | Accuracy, precision, recall, F1, ROC-AUC | EVALUATION + AI_LAB | Evaluation Center / ML Lab | Metric computation with imbalance guidance | PARTIALLY IMPLEMENTED (accuracy/precision/recall/F1; ROC-AUC deferred) |
+| 35 | Decision trees: Gini and entropy | AI_LAB + EVALUATION | Classical ML Lab | Tree construction/split comparison | PARTIALLY IMPLEMENTED (bounded decision tree; criterion comparison deferred) |
+| 36 | Pruning and overfitting mitigation | AI_LAB + EVALUATION | Classical ML Lab | Depth/pruning validation curves | PARTIALLY IMPLEMENTED (depth-bounded CV comparison) |
+| 37 | Random Forest: bagging and feature randomness | AI_LAB + EVALUATION | Classical ML Lab | Ensemble experiment and comparison | IMPLEMENTED (`random_forest` experiment) |
 | 38 | Feature importance analysis | AI_LAB + EVALUATION | Classical ML Lab | Impurity/permutation importance with caveats | PLANNED |
-| 39 | SVM hyperplane and margin | AI_LAB + DOCUMENTATION | Classical ML Lab | 2D conceptual visualization and classifier experiment | PLANNED |
-| 40 | KNN distance metrics and choosing K | AI_LAB + EVALUATION | Classical ML Lab | K/distance validation comparison | PLANNED |
+| 39 | SVM hyperplane and margin | AI_LAB + DOCUMENTATION_ONLY | Classical ML Lab | 2D conceptual visualization and classifier experiment | PLANNED |
+| 40 | KNN distance metrics and choosing K | AI_LAB + EVALUATION | Classical ML Lab | K/distance validation comparison | IMPLEMENTED (scaled KNN plus bounded K cross-validation) |
 | 41 | Naive Bayes and Bayes theorem for classification | AI_LAB + EVALUATION | Classical ML Lab | Text/tabular classifier experiment | PLANNED |
-| 42 | K-Means steps and convergence | AI_LAB + EVALUATION | Clustering Lab | Iterative centroid visualization | PLANNED |
-| 43 | Elbow method and Silhouette score | AI_LAB + EVALUATION | Clustering Lab | K-selection comparison and limitations | PLANNED |
-| 44 | Variance, covariance matrix, eigenvectors | AI_LAB + DOCUMENTATION | PCA Lab | Mathematical visualization and preprocessing link | PLANNED |
-| 45 | Explained variance ratio | AI_LAB + EVALUATION | PCA Lab | Component selection chart | PLANNED |
-| 46 | PCA for visualization and preprocessing | AI_LAB + EVALUATION | PCA/Embedding Lab | 2D projection with pipeline leakage protection | PLANNED |
-| 47 | Train/validation/test split | AI_LAB + EVALUATION | Experiment framework | Versioned split strategy and leakage guard | PLANNED |
-| 48 | K-fold cross-validation | AI_LAB + EVALUATION | Experiment framework | Reproducible cross-validation reports | PLANNED |
-| 49 | Confusion matrix, precision, recall, F1 | AI_LAB + EVALUATION | Evaluation Center | Per-class metrics and confusion visualization | PLANNED |
+| 42 | K-Means steps and convergence | AI_LAB + EVALUATION | Clustering Lab | Seeded clustering with inertia and membership outputs | IMPLEMENTED (`kmeans` experiment) |
+| 43 | Elbow method and Silhouette score | AI_LAB + EVALUATION | Clustering Lab | K-selection comparison and limitations | PARTIALLY IMPLEMENTED (silhouette/inertia; elbow sweep deferred) |
+| 44 | Variance, covariance matrix, eigenvectors | AI_LAB + DOCUMENTATION_ONLY | PCA Lab | Mathematical visualization and preprocessing link | PLANNED |
+| 45 | Explained variance ratio | AI_LAB + EVALUATION | PCA Lab | Component selection results | IMPLEMENTED (per-component and cumulative variance) |
+| 46 | PCA for visualization and preprocessing | AI_LAB + EVALUATION | PCA/Embedding Lab | Standardized projection with leakage protection | IMPLEMENTED (bounded PCA experiment) |
+| 47 | Train/validation/test split | AI_LAB + EVALUATION | Experiment framework | Versioned split strategy and leakage guard | IMPLEMENTED (seeded Data/ML/DL splits) |
+| 48 | K-fold cross-validation | AI_LAB + EVALUATION | Experiment framework | Reproducible cross-validation reports | IMPLEMENTED (three-fold classification metrics) |
+| 49 | Confusion matrix, precision, recall, F1 | AI_LAB + EVALUATION | Evaluation Center | Per-class metrics and confusion visualization | IMPLEMENTED (classifier metrics and UI result table) |
 | 50 | Grid Search and Random Search | AI_LAB + EVALUATION | Experiment framework | Bounded queued tuning with validation-only selection | PLANNED |
-| 51 | Biological vs artificial neuron | AI_LAB + DOCUMENTATION | Deep Learning Lab | Conceptual comparison, avoiding biological overclaim | PLANNED |
-| 52 | Perceptron and MLP | AI_LAB + EVALUATION | Deep Learning Lab | Small PyTorch models on reproducible data | PLANNED |
-| 53 | Sigmoid, Tanh, ReLU, Leaky ReLU, Softmax | AI_LAB + DOCUMENTATION | Deep Learning Lab | Activation plots and behavior comparison | PLANNED |
-| 54 | Forward propagation | AI_LAB + DOCUMENTATION | Deep Learning Lab | Step-through tensor flow | PLANNED |
-| 55 | Backpropagation and chain rule | AI_LAB + DOCUMENTATION | Deep Learning Lab | Autograd/manual small-network demonstration | PLANNED |
-| 56 | MSE, cross-entropy, binary cross-entropy | AI_LAB + EVALUATION | Deep Learning Lab | Task-appropriate loss comparison | PLANNED |
-| 57 | Batch, stochastic, mini-batch gradient descent | AI_LAB + EVALUATION | Deep Learning Lab | Convergence/noise comparison | PLANNED |
-| 58 | Adam optimizer | AI_LAB + EVALUATION | Deep Learning Lab | Adam-focused training experiment | PLANNED |
+| 51 | Biological vs artificial neuron | AI_LAB + DOCUMENTATION_ONLY | Deep Learning Lab | Conceptual comparison, avoiding biological overclaim | PLANNED |
+| 52 | Perceptron and MLP | AI_LAB + EVALUATION | Deep Learning Lab | Small PyTorch models on reproducible data | IMPLEMENTED (CPU-safe PyTorch MLP) |
+| 53 | Sigmoid, Tanh, ReLU, Leaky ReLU, Softmax | AI_LAB + DOCUMENTATION_ONLY | Deep Learning Lab | Activation plots and behavior comparison | PLANNED |
+| 54 | Forward propagation | AI_LAB + DOCUMENTATION_ONLY | Deep Learning Lab | Tensor flow through bounded MLP | IMPLEMENTED (training and validation forward passes) |
+| 55 | Backpropagation and chain rule | AI_LAB + DOCUMENTATION_ONLY | Deep Learning Lab | Autograd small-network demonstration | IMPLEMENTED (PyTorch `loss.backward`) |
+| 56 | MSE, cross-entropy, binary cross-entropy | AI_LAB + EVALUATION | Deep Learning Lab | Task-appropriate loss comparison | PARTIALLY IMPLEMENTED (MSE regression metric and cross-entropy MLP; BCE deferred) |
+| 57 | Batch, stochastic, mini-batch gradient descent | AI_LAB + EVALUATION | Deep Learning Lab | Convergence/noise comparison | PARTIALLY IMPLEMENTED (mini-batch training; comparison deferred) |
+| 58 | Adam optimizer | AI_LAB + EVALUATION | Deep Learning Lab | Adam-focused training experiment | IMPLEMENTED (bounded Adam optimizer) |
 | 59 | Learning rate and scheduling | AI_LAB + EVALUATION | Deep Learning Lab | Schedule and convergence visualization | PLANNED |
 | 60 | Batch normalization | AI_LAB + EVALUATION | Deep Learning Lab | Controlled ablation | PLANNED |
-| 61 | Dropout and regularization | AI_LAB + EVALUATION | Deep Learning Lab | Train/eval behavior and overfit comparison | PLANNED |
-| 62 | Convolution filters, feature maps, strides, padding | AI_LAB + DOCUMENTATION | CNN Lab | Visual convolution demonstration | PLANNED |
-| 63 | Max and average pooling | AI_LAB + DOCUMENTATION | CNN Lab | Feature-map/pooling comparison | PLANNED |
-| 64 | LeNet, VGG, ResNet | AI_LAB + DOCUMENTATION | CNN Lab | Architecture comparison; no pointless production model | PLANNED |
+| 61 | Dropout and regularization | AI_LAB + EVALUATION | Deep Learning Lab | Train/eval behavior and overfit comparison | IMPLEMENTED (dropout plus L2 weight decay) |
+| 62 | Convolution filters, feature maps, strides, padding | AI_LAB + DOCUMENTATION_ONLY | CNN Lab | Visual convolution demonstration | PLANNED |
+| 63 | Max and average pooling | AI_LAB + DOCUMENTATION_ONLY | CNN Lab | Feature-map/pooling comparison | PLANNED |
+| 64 | LeNet, VGG, ResNet | AI_LAB + DOCUMENTATION_ONLY | CNN Lab | Architecture comparison; no pointless production model | PLANNED |
 | 65 | Transfer learning | AI_LAB + EVALUATION | CNN Lab | Small frozen/fine-tuned model experiment | PLANNED |
-| 66 | PyTorch tensor creation, indexing, operations | AI_LAB | Deep Learning Lab | Tensor exercises | PLANNED |
-| 67 | Autograd automatic differentiation | AI_LAB + DOCUMENTATION | Deep Learning Lab | Gradient inspection exercise | PLANNED |
-| 68 | Build models with `nn.Module` | AI_LAB | Deep Learning Lab | Typed small-model implementation | PLANNED |
-| 69 | Training loop: forward, loss, backward, optimizer | AI_LAB + EVALUATION | Deep Learning Lab | Queued reproducible training run | PLANNED |
+| 66 | PyTorch tensor creation, indexing, operations | AI_LAB | Deep Learning Lab | Tensor exercises | IMPLEMENTED (typed train/validation tensors and batches) |
+| 67 | Autograd automatic differentiation | AI_LAB + DOCUMENTATION_ONLY | Deep Learning Lab | Gradient inspection exercise | IMPLEMENTED (autograd training loop; explicit gradient UI deferred) |
+| 68 | Build models with `nn.Module` | AI_LAB | Deep Learning Lab | Typed small-model implementation | IMPLEMENTED (`torch.nn.Sequential` module) |
+| 69 | Training loop: forward, loss, backward, optimizer | AI_LAB + EVALUATION | Deep Learning Lab | Reproducible bounded training run | IMPLEMENTED (`mlp` experiment and tests) |
 | 70 | Save and load models | AI_LAB + PRODUCTION | Lab artifact registry | Versioned safe model artifact lifecycle | PLANNED |
-| 71 | Tokenization, stop words, stemming, lemmatization | PRODUCTION + AI_LAB | NLP service / NLP Lab | Document analysis where useful plus comparative exercises | PLANNED |
-| 72 | Part-of-Speech tagging | AI_LAB + DOCUMENTATION | NLP Lab | POS pipeline and error analysis | PLANNED |
+| 71 | Tokenization, stop words, stemming, lemmatization | AI_LAB | NLP Lab | Comparative text preprocessing | PARTIALLY IMPLEMENTED (tokenization/normalization/stop words; stemming/lemmatization deferred) |
+| 72 | Part-of-Speech tagging | AI_LAB + DOCUMENTATION_ONLY | NLP Lab | POS pipeline and error analysis | PLANNED |
 | 73 | Named Entity Recognition | PRODUCTION + AI_LAB + EVALUATION | Document intelligence / NLP Lab | Optional metadata extraction with measured confidence/quality | PLANNED |
-| 74 | Bag of Words and TF-IDF | AI_LAB + EVALUATION | Retrieval Lab | Keyword baseline against dense/hybrid retrieval | PLANNED |
-| 75 | Sentiment analysis and text classification | AI_LAB + EVALUATION | NLP Lab | Hugging Face/classic model comparison | PLANNED |
-| 76 | Word2Vec and GloVe embeddings | AI_LAB + DOCUMENTATION | Embedding Lab | Static embedding concepts/comparison | PLANNED |
-| 77 | RNN hidden state and sequential processing | AI_LAB + DOCUMENTATION | Sequence Models Lab | Small conceptual/time-step demonstration | PLANNED |
-| 78 | Vanishing-gradient problem | AI_LAB + DOCUMENTATION | Sequence Models Lab | Gradient-through-time visualization | PLANNED |
-| 79 | LSTM forget, input, output gates | AI_LAB + DOCUMENTATION | Sequence Models Lab | Gate explainer; no forced production use | PLANNED |
-| 80 | Self-attention and multi-head attention | AI_LAB + DOCUMENTATION | Transformer Lab | Small attention visualization | PLANNED |
-| 81 | Positional encoding | AI_LAB + DOCUMENTATION | Transformer Lab | Encoding visualization | PLANNED |
-| 82 | Encoder-decoder architecture | AI_LAB + DOCUMENTATION | Transformer Lab | Architecture/task mapping | PLANNED |
-| 83 | BERT masked language modeling and bidirectionality | AI_LAB + DOCUMENTATION | Transformer/NLP Lab | Classification/NER or reranker experiment | PLANNED |
-| 84 | GPT causal/autoregressive generation | PRODUCTION + AI_LAB + DOCUMENTATION | LLM Gateway / Transformer Lab | Generation behavior and limitations | PARTIALLY IMPLEMENTED (production autoregressive generation gateway; lab/docs later) |
-| 85 | BPE, WordPiece, SentencePiece tokenization | AI_LAB + DOCUMENTATION | Transformer Lab | Tokenizer comparison and context-cost effects | PLANNED |
-| 86 | GPT, Llama, Mistral, Gemma architecture overview | DOCUMENTATION + AI_LAB | Model catalog / LLM Lab | Capability/family comparison without training | PLANNED |
-| 87 | Pretraining vs fine-tuning vs in-context learning | DOCUMENTATION + EVALUATION | Model strategy / Evaluation Center | Decision guide and prompt/fine-tune comparison where feasible | PLANNED |
+| 74 | Bag of Words and TF-IDF | AI_LAB + EVALUATION | NLP/RAG comparison | Keyword baseline against dense retrieval | IMPLEMENTED (TF-IDF unigram/bigram classifier and local retrieval evaluator) |
+| 75 | Sentiment analysis and text classification | AI_LAB + EVALUATION | NLP Lab | Deterministic sentiment classification | IMPLEMENTED (TF-IDF logistic regression fixture) |
+| 76 | Word2Vec and GloVe embeddings | AI_LAB + DOCUMENTATION_ONLY | Embedding Lab | Static embedding concepts/comparison | PLANNED |
+| 77 | RNN hidden state and sequential processing | AI_LAB + DOCUMENTATION_ONLY | Sequence Models Lab | Small conceptual/time-step demonstration | PLANNED |
+| 78 | Vanishing-gradient problem | AI_LAB + DOCUMENTATION_ONLY | Sequence Models Lab | Gradient-through-time visualization | PLANNED |
+| 79 | LSTM forget, input, output gates | AI_LAB + DOCUMENTATION_ONLY | Sequence Models Lab | Gate explainer; no forced production use | PLANNED |
+| 80 | Self-attention and multi-head attention | AI_LAB + DOCUMENTATION_ONLY | Transformer Lab | Small attention visualization | PLANNED |
+| 81 | Positional encoding | AI_LAB + DOCUMENTATION_ONLY | Transformer Lab | Encoding visualization | PLANNED |
+| 82 | Encoder-decoder architecture | AI_LAB + DOCUMENTATION_ONLY | Transformer Lab | Architecture/task mapping | PLANNED |
+| 83 | BERT masked language modeling and bidirectionality | AI_LAB + DOCUMENTATION_ONLY | Transformer/NLP Lab | Pretrained representation inspection | PARTIALLY IMPLEMENTED (optional tiny encoder inference; no MLM training claim) |
+| 84 | GPT causal/autoregressive generation | PRODUCTION + AI_LAB + DOCUMENTATION_ONLY | LLM Gateway / Transformer Lab | Generation behavior and limitations | PARTIALLY IMPLEMENTED (production autoregressive generation gateway; lab/docs later) |
+| 85 | BPE, WordPiece, SentencePiece tokenization | AI_LAB + DOCUMENTATION_ONLY | Transformer Lab | Token ID and tokenizer inspection | PARTIALLY IMPLEMENTED (active cached model tokenizer only; multi-tokenizer comparison deferred) |
+| 86 | GPT, Llama, Mistral, Gemma architecture overview | DOCUMENTATION_ONLY + AI_LAB | Model catalog / LLM Lab | Capability/family comparison without training | PLANNED |
+| 87 | Pretraining vs fine-tuning vs in-context learning | DOCUMENTATION_ONLY + EVALUATION | Model strategy / Evaluation Center | Decision guide and prompt/fine-tune comparison where feasible | PLANNED |
 | 88 | Hugging Face pipeline API | AI_LAB + EVALUATION | NLP/Transformer Lab | Sentiment/generation comparison with accuracy/F1 | PLANNED |
-| 89 | Generative AI: text, image, code, audio, video | DOCUMENTATION + AI_LAB | Generative AI Lab | Modality overview; text practical, others bounded demos/explainers | PLANNED |
-| 90 | Diffusion models: DALL-E, Stable Diffusion, Midjourney | DOCUMENTATION + AI_LAB | Generative AI Lab | Conceptual comparison; no core-product feature invented | PLANNED |
+| 89 | Generative AI: text, image, code, audio, video | DOCUMENTATION_ONLY + AI_LAB | Generative AI Lab | Modality overview; text practical, others bounded demos/explainers | PLANNED |
+| 90 | Diffusion models: DALL-E, Stable Diffusion, Midjourney | DOCUMENTATION_ONLY + AI_LAB | Generative AI Lab | Conceptual comparison; no core-product feature invented | PLANNED |
 | 91 | OpenAI, Anthropic, Google, Cohere APIs | PRODUCTION + AI_LAB + EVALUATION | LLM Gateway / LLM Lab | Provider-neutral contract; adapters only as approved | PARTIALLY IMPLEMENTED (Google Vertex adapter and provider seam) |
-| 92 | Hallucination, context windows, knowledge cutoff | PRODUCTION + EVALUATION + DOCUMENTATION | RAG/validators / Evaluation Center | Grounding, budget management, unanswerable tests | PARTIALLY IMPLEMENTED (bounded evidence, citation validation, abstention tests) |
-| 93 | AI safety and responsible use | PRODUCTION + EVALUATION + DOCUMENTATION | Security/policy / Safety evaluations | Policy controls, red teaming, limitations | PARTIALLY IMPLEMENTED (trusted authorization, safe trace, evidence controls) |
+| 92 | Hallucination, context windows, knowledge cutoff | PRODUCTION + EVALUATION + DOCUMENTATION_ONLY | RAG/validators / Evaluation Center | Grounding, budget management, unanswerable tests | IMPLEMENTED for current scope (bounded evidence, abstention and unsupported-answer metrics) |
+| 93 | AI safety and responsible use | PRODUCTION + EVALUATION + DOCUMENTATION_ONLY | Security/policy / Safety evaluations | Policy controls, red teaming, limitations | IMPLEMENTED for current scope (adversarial suite, safe trace, tenant and tool controls) |
 | 94 | Zero-shot prompting | PRODUCTION + AI_LAB + EVALUATION | Prompt Registry / Prompt Lab | Versioned zero-shot baseline | PLANNED |
 | 95 | Few-shot prompting | PRODUCTION + AI_LAB + EVALUATION | Prompt Registry / Prompt Lab | Versioned examples and comparative evaluation | PLANNED |
-| 96 | Chain-of-Thought prompting | DOCUMENTATION + EVALUATION | Prompt/Safety Lab | Explain reasoning prompting; never expose hidden CoT | PLANNED |
-| 97 | System prompts, context design, personas | PRODUCTION + AI_LAB + EVALUATION | Prompt Registry / Personas | Role separation and evaluated persona prompts | PARTIALLY IMPLEMENTED (evidence-separated document persona/context node) |
+| 96 | Chain-of-Thought prompting | DOCUMENTATION_ONLY + EVALUATION | Prompt/Safety Lab | Explain reasoning prompting; never expose hidden CoT | PLANNED |
+| 97 | System prompts, context design, personas | PRODUCTION + AI_LAB + EVALUATION | Prompt versions / Personas | Role separation and evaluated persona prompts | IMPLEMENTED for v1 (version metadata, labelled persona benchmark; content remains private) |
 | 98 | Prompt templates and output parsers | PRODUCTION + AI_LAB + EVALUATION | Prompt Registry / contracts | Versioned templates and schema validators | PARTIALLY IMPLEMENTED (versioned grounded prompt and structured schema) |
-| 99 | Evaluate and iterate on prompts | EVALUATION + PRODUCTION | Evaluation Center / Prompt Registry | Dataset-backed comparison and promotion gates | PLANNED |
+| 99 | Evaluate and iterate on prompts | EVALUATION + PRODUCTION | Evaluation Center / prompt versions | Dataset-backed comparison and promotion gates | PARTIALLY IMPLEMENTED (v1 deterministic baseline and persisted runs; promotion UI deferred) |
 | 100 | OpenAI chat API and system prompts | PRODUCTION + AI_LAB | OpenAI adapter / LLM Lab | Current supported API adapter and guided usage | PLANNED |
 | 101 | Anthropic messages API and system prompts | PRODUCTION + AI_LAB | Anthropic adapter / LLM Lab | Provider adapter and guided comparison | PLANNED |
 | 102 | Maintain conversation history | PRODUCTION + AI_LAB | Conversation service / Chatbot Lab | Bounded short-term history and summary policy | PLANNED |
 | 103 | Structured outputs and JSON mode | PRODUCTION + AI_LAB + EVALUATION | LLM Gateway / schema layer | Server-validated typed outputs and failure tests | PARTIALLY IMPLEMENTED (Gemini JSON schema plus server validation) |
 | 104 | Function calling / model-triggered actions | PRODUCTION + AI_LAB + EVALUATION | Tool registry / Agent Lab | Model proposes; trusted code authorizes/executes | PLANNED |
-| 105 | RAG: retriever, knowledge base, generator | PRODUCTION + AI_LAB + EVALUATION | RAG service / Retrieval Lab | End-to-end Pinecone RAG and educational decomposition | PARTIALLY IMPLEMENTED (complete production baseline; lab/evaluation later) |
-| 106 | Indexing, retrieval, augmentation, generation | PRODUCTION + AI_LAB + EVALUATION | Ingestion and RAG services | Versioned pipeline with stage metrics | PARTIALLY IMPLEMENTED (production baseline and safe stage trace) |
-| 107 | RAG for hallucination/private/current data | PRODUCTION + EVALUATION + DOCUMENTATION | RAG validators / Evaluation Center | Grounding/unanswerable/private-scope tests | PARTIALLY IMPLEMENTED (tenant isolation and unanswerable tests) |
-| 108 | Fixed-size and recursive chunking | PRODUCTION + AI_LAB + EVALUATION | Ingestion / Retrieval Lab | Page-aware strategies compared on retrieval metrics | PARTIALLY IMPLEMENTED (configurable recursive page-aware production chunker) |
+| 105 | RAG: retriever, knowledge base, generator | PRODUCTION + AI_LAB + EVALUATION | RAG service / Evaluation Center | End-to-end Pinecone RAG and educational decomposition | IMPLEMENTED (production workflow plus deterministic evaluation metrics) |
+| 106 | Indexing, retrieval, augmentation, generation | PRODUCTION + AI_LAB + EVALUATION | Ingestion and RAG services | Versioned pipeline with stage metrics | IMPLEMENTED for baseline (production stages, safe trace, RAG evaluator) |
+| 107 | RAG for hallucination/private/current data | PRODUCTION + EVALUATION + DOCUMENTATION_ONLY | RAG validators / Evaluation Center | Grounding/unanswerable/private-scope tests | IMPLEMENTED (tenant isolation, abstention, unsupported-answer and injection tests) |
+| 108 | Fixed-size and recursive chunking | PRODUCTION + AI_LAB + EVALUATION | Ingestion / RAG comparison | Page-aware strategies compared on retrieval metrics | IMPLEMENTED for recursive baseline and isolated chunk configuration comparison |
 | 109 | Document loaders and preprocessing | PRODUCTION + AI_LAB | Ingestion / RAG Lab | Safe page-aware loaders, cleaning, OCR fallback | PARTIALLY IMPLEMENTED (PDF extraction/rendering and explicit OCR seam) |
-| 110 | Embeddings and semantic similarity | PRODUCTION + AI_LAB + EVALUATION | Embedding service / Lab | Production embeddings and semantic comparison | PARTIALLY IMPLEMENTED (Vertex embedding adapter, version/dimension controls) |
+| 110 | Embeddings and semantic similarity | PRODUCTION + AI_LAB + EVALUATION | Embedding service / Lab | Production embeddings and semantic comparison | IMPLEMENTED (Vertex/Pinecone production path and local comparison concept) |
 | 111 | OpenAI embeddings and Sentence-Transformers | PRODUCTION + AI_LAB + EVALUATION | Embedding adapters / Lab | Approved model comparison with versioned indexes | PLANNED |
-| 112 | FAISS or Chroma vector database | AI_LAB + DOCUMENTATION | Vector Database Lab | Curriculum-focused local comparison; not production replacement | PLANNED |
-| 113 | Cosine, dot-product, Euclidean similarity | AI_LAB + EVALUATION + DOCUMENTATION | Embedding Lab | Metric calculations and retrieval comparisons | PLANNED |
-| 114 | Agent perception, reasoning, action loop | PRODUCTION + AI_LAB + DOCUMENTATION | Agent runtime / Agent Lab | Bounded state/action lifecycle explainer and trace | PARTIALLY IMPLEMENTED (bounded document workflow and safe trace) |
-| 115 | ReAct: Reason and Act | PRODUCTION + AI_LAB + DOCUMENTATION | LangGraph / Agent Lab | Controlled tool loop without exposing private reasoning | PLANNED |
-| 116 | Tool use and function calling in agents | PRODUCTION + AI_LAB + EVALUATION | Tool registry / Agent Lab | Authorized structured tools and adversarial tests | PLANNED |
-| 117 | Short-term vs long-term memory | PRODUCTION + AI_LAB + DOCUMENTATION | Conversation memory / Agent Lab | Bounded context and opt-in authorized long-term design | PLANNED |
-| 118 | LangChain chains, prompts, tools, simple agents | AI_LAB + DOCUMENTATION | Agent Lab | Educational comparison; production uses LangChain only where useful | PLANNED |
-| 119 | LangGraph nodes, edges, stateful workflows | PRODUCTION + AI_LAB + EVALUATION | Agent runtime / Agent Lab | Full production graph plus simple educational graph | PARTIALLY IMPLEMENTED (typed six-node production document graph) |
-| 120 | Build a FastAPI REST endpoint | PRODUCTION + AI_LAB | API / Deployment Lab | Versioned typed REST API and basic lab endpoint exercise | PARTIALLY IMPLEMENTED (production KB/chat APIs; lab exercise later) |
-| 121 | Accept input and return predictions over HTTP | PRODUCTION + AI_LAB + EVALUATION | API / Deployment Lab | Validated request/response with auth, limits, tests | PARTIALLY IMPLEMENTED (authenticated grounded-answer HTTP workflow) |
-| 122 | Test an API locally | EVALUATION + DOCUMENTATION | Test suite / developer guide | Local unit/integration/API smoke workflow | IMPLEMENTED (21-test backend suite through Milestone 2) |
+| 112 | FAISS or Chroma vector database | AI_LAB + DOCUMENTATION_ONLY | Vector Database Lab | Curriculum-focused local comparison; not production replacement | PLANNED |
+| 113 | Cosine, dot-product, Euclidean similarity | AI_LAB + EVALUATION + DOCUMENTATION_ONLY | Embedding Lab | Metric calculations and retrieval comparisons | PARTIALLY IMPLEMENTED (cosine retrieval comparison; dot/Euclidean deferred) |
+| 114 | Agent perception, reasoning, action loop | PRODUCTION + AI_LAB + DOCUMENTATION_ONLY | Agent runtime / Agent Lab | Bounded state/action lifecycle explainer and trace | PARTIALLY IMPLEMENTED (bounded document workflow and safe trace) |
+| 115 | ReAct: Reason and Act | PRODUCTION + AI_LAB + DOCUMENTATION_ONLY | LangGraph / Agent Lab | Controlled tool loop without exposing private reasoning | PLANNED |
+| 116 | Tool use and function calling in agents | PRODUCTION + AI_LAB + EVALUATION | Agent tools / Evaluation Center | Authorized structured tools and adversarial tests | IMPLEMENTED for document/database/math routes (no arbitrary function execution) |
+| 117 | Short-term vs long-term memory | PRODUCTION + AI_LAB + DOCUMENTATION_ONLY | Conversation memory / Agent Lab | Bounded context and opt-in authorized long-term design | PLANNED |
+| 118 | LangChain chains, prompts, tools, simple agents | AI_LAB + DOCUMENTATION_ONLY | Agent Lab | Educational comparison; production uses LangChain only where useful | PLANNED |
+| 119 | LangGraph nodes, edges, stateful workflows | PRODUCTION + EVALUATION | Agent runtime / route evaluation | Full production graph and labelled evaluation | IMPLEMENTED (typed multi-route production graph; no redundant educational graph) |
+| 120 | Build a FastAPI REST endpoint | PRODUCTION + AI_LAB | API / AI Lab | Versioned typed REST API and lab endpoints | IMPLEMENTED (production and tenant-scoped experiment APIs) |
+| 121 | Accept input and return predictions over HTTP | PRODUCTION + AI_LAB + EVALUATION | API / AI Lab / Evaluation Center | Validated request/response with auth, limits, tests | IMPLEMENTED (chat, lab, and evaluation HTTP workflows) |
+| 122 | Test an API locally | EVALUATION + DOCUMENTATION_ONLY | Test suite / developer guide | Local unit/integration/API smoke workflow | IMPLEMENTED (backend suite plus managed opt-in test) |
 
 ## 11. Curriculum coverage strategy
 
 - **Production:** Python/data handling where naturally needed; deterministic statistics; document NLP where useful; LLM/provider/prompt/structured output; RAG/embeddings; safe agents/tools/memory; FastAPI. Production evidence requires tests and operational controls.
 - **AI Lab:** foundations, classical ML, DL/CNN, RNN/LSTM, transformer mechanics, non-core generative modalities, FAISS/Chroma, and hands-on comparisons. Runs are isolated, resource-bounded, reproducible, and never imported by production services.
 - **Evaluation:** model metrics, data splits/tuning, retrieval/embedding/prompt/provider comparisons, routing, groundedness, citations, safety, and regression gates.
-- **Documentation:** theoretical foundations, responsible limitations, workflow practices, and concepts whose production implementation would be artificial or unsafe.
+- **Documentation only:** theoretical foundations, responsible limitations, workflow practices, and concepts whose production implementation would be artificial or unsafe.
 
 ## 12. Deployment requirements
 
@@ -365,7 +365,7 @@ Classification meanings: `PRODUCTION` is a real platform capability; `AI_LAB` is
 - Observability uses Prometheus/Grafana, ELK/Filebeat, and OpenTelemetry.
 - Infrastructure as code only after approval; separate environments, least-privilege IAM/network, TLS/WAF/rate controls, managed secrets/keys, backups, telemetry, budgets, and rollback.
 - CI/CD cannot promote when critical tests/security/evaluation thresholds fail; production requires explicit approval.
-- No Kubernetes or cloud deployment implementation is authorized in Milestone 2.
+- No Kubernetes or cloud deployment implementation is authorized in Milestone 4; it belongs to Milestone 5.
 
 ## 13. Out of scope for the initial production release
 
@@ -399,7 +399,7 @@ Approved NoSQL connector adapters; additional providers/models/personas/tools; h
 | D-011 | Financial data | Dataset/provider/licensing and year definition are deferred to the structured-data phase. | DEFERRED |
 | D-012 | Retention and provider data policy | Per-class retention/deletion/legal hold and final provider egress policy must be approved before affected data is persisted or transmitted. | REQUIRES LATER APPROVAL |
 
-No deferred item blocked Milestone 3. Milestone 4 remains unauthorized until separately approved.
+No deferred deployment item blocks Milestone 4. Milestone 5 infrastructure remains unauthorized until separately approved.
 
 ## 16. Milestone 2 requirement status
 
@@ -413,4 +413,14 @@ Implemented: production persona registry and AUTO/manual selector; typed DOCUMEN
 
 Verification covers automatic Legal/Financial selection, manual/invalid persona behavior, document/database/math routes, PostgreSQL count/average, row limits, mutations/comments/stacked statements/schema escape/unsafe functions, cross-tenant source denial, percentage/change/average/division errors, invalid models, citation regression, safe trace serialization, backend static/tests, and frontend lint/type/build. Managed-provider and real browser E2E results are recorded at final acceptance rather than inferred.
 
-Curriculum evidence updated by this milestone: topic 86 (prompt/context security), 89-92 (LLM/provider/model behavior), 95-98 (RAG/embeddings remain production), 99-104 (agent/tool/persona/routing safety), 106-109 (deterministic math/statistics), 111-114 (structured outputs, validation, evaluation tests), and 121-122 (HTTP/local API testing). The traceability classification is unchanged: theoretical ML/DL/NLP topics remain AI_LAB/EVALUATION/DOCUMENTATION rather than forced into production.
+Curriculum evidence updated by this milestone: topic 86 (prompt/context security), 89-92 (LLM/provider/model behavior), 95-98 (RAG/embeddings remain production), 99-104 (agent/tool/persona/routing safety), 106-109 (deterministic math/statistics), 111-114 (structured outputs, validation, evaluation tests), and 121-122 (HTTP/local API testing). Theoretical ML/DL/NLP topics remain AI_LAB, EVALUATION, or DOCUMENTATION_ONLY rather than being forced into production.
+
+## 18. Milestone 4 requirement status
+
+Implemented: an isolated tenant-scoped Data/Classical ML/Deep Learning/NLP/Transformer AI Lab; bounded runtime controls; reproducible PostgreSQL experiments; local artifact adapter; RAG retrieval/answer/citation/safety metrics; isolated RAG setting comparison; persona/router, database, math, LLM, prompt-version, and security evaluations; AI Lab/Evaluation frontend views; connector host allowlisting; PDF extension and chunk bounds; indirect prompt-injection and cross-tenant experiment tests; and safe structured completion telemetry.
+
+Verification evidence is in `tests/backend/test_milestone4_ai_lab_evaluation.py`, the existing Milestone 1-3 regression suites, and the tenant-scoped `/ai-lab`, `/evaluations`, and `/experiments` APIs. Production Pinecone remains unchanged; the local TF-IDF comparison is explicitly an evaluation fixture, not a replacement vector database. Hidden prompt content, secrets, connection URLs, chain-of-thought, arbitrary code/filesystem/network access, and production vector mutations are excluded from lab/evaluation contracts.
+
+Curriculum classifications were reviewed across all 122 topics and normalized to the four authoritative labels: `PRODUCTION`, `AI_LAB`, `EVALUATION`, and `DOCUMENTATION_ONLY`. Statuses distinguish complete, partial, and planned work. CNN/RNN/LSTM/diffusion, full tokenizer comparisons, ROC-AUC, SVM/Naive Bayes, Pandas, FAISS/Chroma, fine-tuning, and large-model training are not claimed as implemented merely because they are curriculum topics.
+
+Milestone 5 retains durable distributed experiment jobs, production object artifacts, full scanner/parser isolation, load/chaos/recovery, Kubernetes/GKE/Helm/Jenkins, Secret Manager delivery, and Prometheus/Grafana/ELK/OpenTelemetry infrastructure.

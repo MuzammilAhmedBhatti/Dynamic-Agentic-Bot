@@ -22,6 +22,33 @@ from dynamic_agentic_api.rag.service import UNANSWERABLE, RagResult, RagService
 from dynamic_agentic_api.tracing.service import TraceService
 
 GRAPH_VERSION = "dynamic-agent-graph-v2"
+_EXPLICIT_DATABASE_MARKERS = (
+    "database",
+    "data source",
+    "sql",
+    "table",
+    "customers",
+    "orders",
+    "sales",
+)
+
+
+def normalize_plan_for_selected_sources(
+    plan: AgentPlan, *, question: str, has_data_source: bool
+) -> AgentPlan:
+    routes = list(plan.routes)
+    lowered = question.casefold()
+    explicitly_requests_database = any(marker in lowered for marker in _EXPLICIT_DATABASE_MARKERS)
+    if "database" in routes and not has_data_source and not explicitly_requests_database:
+        routes = [route for route in routes if route != "database"]
+        if "document" not in routes:
+            routes.insert(0, "document")
+    persona_slug = (
+        "financial-analyst"
+        if any(route in routes for route in ("database", "math"))
+        else plan.persona_slug
+    )
+    return AgentPlan(persona_slug, routes, plan.calculation)
 
 
 class AgentState(TypedDict):
@@ -120,18 +147,27 @@ class DocumentRagGraph:
 
         async def persona_selector(state: AgentState) -> dict[str, object]:
             await emit("persona_selection_started", "persona_selector")
-            plan = await state["llm"].plan(state["question"])
+            plan = normalize_plan_for_selected_sources(
+                await state["llm"].plan(state["question"]),
+                question=state["question"],
+                has_data_source=state["requested_data_source_id"] is not None,
+            )
+            requested_persona_id = state["requested_persona_id"]
             persona = (
-                self._personas.get_by_id(state["requested_persona_id"])
-                if state["requested_persona_id"]
+                self._personas.get_by_id(requested_persona_id)
+                if requested_persona_id
                 else self._personas.get_by_slug(plan.persona_slug)
             )
+            selection_mode = "manual" if requested_persona_id else "auto"
+            if not requested_persona_id and set(plan.routes) - set(persona.allowed_routes):
+                persona = self._personas.get_by_slug("general-assistant")
+                selection_mode = "auto_policy_fallback"
             await emit(
                 "persona_selected",
                 "persona_selector",
                 {
                     "persona": persona.slug,
-                    "selection_mode": "manual" if state["requested_persona_id"] else "auto",
+                    "selection_mode": selection_mode,
                 },
             )
             return {"persona": persona, "plan": plan}

@@ -97,6 +97,18 @@ class PostgresConnector:
                 code="INVALID_DATA_SOURCE",
                 message="A PostgreSQL database URL is required.",
             )
+        if url.host.casefold() not in self._settings.data_source_allowed_host_list:
+            raise AppError(
+                status_code=422,
+                code="DATA_SOURCE_HOST_NOT_ALLOWED",
+                message="The PostgreSQL host is not in the configured connector allowlist.",
+            )
+        if url.port is not None and not 1 <= url.port <= 65535:
+            raise AppError(
+                status_code=422,
+                code="INVALID_DATA_SOURCE",
+                message="The PostgreSQL port is invalid.",
+            )
         return url.set(drivername="postgresql+asyncpg").render_as_string(hide_password=False)
 
     async def discover_schema(self, source: DataSource) -> list[SchemaTable]:

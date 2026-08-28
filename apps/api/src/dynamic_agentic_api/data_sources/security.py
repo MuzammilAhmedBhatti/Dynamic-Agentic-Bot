@@ -41,6 +41,7 @@ _SAFE_FUNCTIONS = frozenset(
         "abs",
         "ceil",
         "floor",
+        "cast",
     }
 )
 

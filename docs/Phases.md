@@ -33,7 +33,7 @@ Implemented:
 
 Acceptance evidence: backend lint/format/type checks, 21 tests, frontend lint/type/build, dependency audit, migration round trip, and secret-oriented review must pass before publication. Live managed-provider test is conditional on owner credentials and is not run in CI.
 
-## Milestone 3 - Complete intelligence product — IMPLEMENTED, ACCEPTANCE IN PROGRESS
+## Milestone 3 - Complete intelligence product — DONE
 
 Authorization: APPROVED on 2026-08-28.
 
@@ -44,32 +44,34 @@ Scope when approved:
 - Structured-data ingestion/query UI, schema catalog, SELECT-only AST enforcement, read-only credentials, row/time/result bounds, and audit.
 - Evaluated hybrid retrieval/reranking and production-grade ingestion through Cloud Storage/Pub/Sub workers, OCR/scanner integrations, deletion lifecycle, progress/recovery.
 - Complete Dynamic Agentic Systems UI surfaces and audit/usage controls.
-- Integrated but isolated AI Lab for ML/DL/NLP/curriculum demonstrations and Evaluation Center with golden datasets, route/retrieval/RAG/safety/provider metrics and release gates.
 
 Entry decisions: financial dataset/provider, connector topology, model/data policies, retention, and evaluation thresholds.
 
 Exit criteria: remaining DAS functional requirements work end to end; curriculum mappings assigned to this milestone have evidence; security/evaluation suites pass; no experimental implementation leaks into production.
 
-## Milestone 4 - Production security, scale, and GKE delivery
+Implementation delivered: persona AUTO/manual selection; typed multi-route LangGraph; safe PostgreSQL source registration/query; AST validation; deterministic math; provider/model registry and validation; suggestions; unified formatting; expanded safe trace; frontend integration; demo data; security/regression tests.
+
+## Milestone 4 - AI Lab, Evaluation Center, and hardening — IMPLEMENTED, ACCEPTANCE IN PROGRESS
+
+Authorization: APPROVED on 2026-08-28.
+
+Implemented scope:
+
+- Isolated, tenant-scoped Data, Classical ML, Deep Learning, NLP, and Transformer labs with resource limits and reproducibility metadata.
+- PostgreSQL experiment persistence plus development artifact-store abstraction.
+- RAG/configuration, LLM/prompt, persona/router, database, math, and security evaluations with deterministic metrics where possible.
+- AI Lab and Evaluation web workspaces with controls, metric visualization, and run history.
+- Connector SSRF allowlist, stronger PDF validation, chunk ceiling, injection/adversarial tests, and safe structured experiment telemetry.
+- Full curriculum reclassification using PRODUCTION, AI_LAB, EVALUATION, and DOCUMENTATION_ONLY without claiming unbuilt theory as complete.
+
+Exit criteria: production Milestone 3 regression, Milestone 4 suites, managed integrations, tenant/security checks, frontend gates, migration validation, E2E/browser attempt, documentation, and public repository review pass.
+
+## Milestone 5 - Production security, scale, observability, and GKE delivery
 
 Authorization: NOT APPROVED.
 
-Scope when approved:
-
-- Threat-model closure, real malware scanning, parser/OCR isolation, secret rotation, data lifecycle, audit hardening, dependency/SBOM/signing, penetration/security tests.
-- Load/soak/chaos/restore tests; quotas, backpressure, caches, durable jobs, distributed WebSocket fan-out, provider circuit breakers, database pooling, backup/PITR and recovery drills.
-- Secure non-root images; local kind; Helm charts; Jenkins pipelines; Artifact Registry; Secret Manager/CSI; GKE Workload Identity, RBAC, default-deny NetworkPolicy, HPA, probes, disruption budgets and topology spread.
-- Prometheus/Grafana, ELK/Filebeat, OpenTelemetry, alerts/dashboards, runbooks, staged promotion, canary/rollback, and reproducible GCP environments.
-- Final requirements/curriculum verification and operator/developer/user documentation.
-
-Entry decisions: GCP region, cluster topology/capacity, SLOs, RTO/RPO, retention/residency, budget, DNS/domain, and production identity/provider accounts.
-
-Exit criteria: full CI/E2E/security/evaluation/load/restore/deployment suites pass; GKE deployment is reproducible, observable, recoverable, and approved; every mandatory DAS requirement is verified.
-
-Implementation delivered: persona AUTO/manual selection; typed multi-route LangGraph; safe PostgreSQL source registration/query; AST validation; deterministic math; provider/model registry and validation; suggestions; unified formatting; expanded safe trace; frontend integration; demo data; security/regression tests.
-
-Completion is recorded only after the managed regression and real E2E scenarios pass. Milestone 4 remains unapproved.
+Scope when approved: parser/scanner isolation and production data lifecycle; load/soak/chaos/restore; durable jobs, distributed streaming, pooling and recovery; kind, containers, Helm, Jenkins, Artifact Registry, Secret Manager, GKE, Workload Identity, Kubernetes RBAC/NetworkPolicy/HPA; Prometheus/Grafana, ELK/Filebeat and OpenTelemetry infrastructure; deployment runbooks, promotion and rollback.
 
 ## Current stop boundary
 
-Stop after Milestone 3 acceptance and repository publication. Do not provision kind, Helm, Jenkins, GKE, cloud resources, AI Lab, or observability infrastructure without explicit Milestone 4 approval.
+Stop after Milestone 4 acceptance and repository publication. Do not provision kind, Helm, Jenkins, GKE, cloud resources, or observability infrastructure without explicit Milestone 5 approval.

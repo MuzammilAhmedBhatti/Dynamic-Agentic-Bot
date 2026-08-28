@@ -109,6 +109,12 @@ async def upload_document(
             code="PDF_REQUIRED",
             message="Only PDF uploads are supported.",
         )
+    if not file.filename or Path(file.filename).suffix.casefold() != ".pdf":
+        raise AppError(
+            status_code=415,
+            code="PDF_EXTENSION_REQUIRED",
+            message="The upload filename must use the .pdf extension.",
+        )
     data = await file.read(settings.max_pdf_size_bytes + 1)
     if not data:
         raise AppError(status_code=422, code="EMPTY_UPLOAD", message="The uploaded PDF is empty.")

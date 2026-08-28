@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from functools import lru_cache
 
 from dynamic_agentic_api.agents.document_graph import DocumentRagGraph
+from dynamic_agentic_api.ai_lab.service import AiLabService
 from dynamic_agentic_api.config import get_settings
 from dynamic_agentic_api.data_sources.service import CredentialCipher, PostgresConnector
 from dynamic_agentic_api.embeddings.providers import (
@@ -12,6 +13,8 @@ from dynamic_agentic_api.embeddings.providers import (
     VertexEmbeddingProvider,
 )
 from dynamic_agentic_api.errors import AppError
+from dynamic_agentic_api.evaluation.service import EvaluationService
+from dynamic_agentic_api.experiments.service import ExperimentService
 from dynamic_agentic_api.ingestion.ocr import UnavailableOcrService
 from dynamic_agentic_api.ingestion.pdf import PdfProcessor
 from dynamic_agentic_api.ingestion.scanning import SignatureOnlyMalwareScanner
@@ -47,6 +50,9 @@ class AiServices:
     personas: PersonaRegistry
     database: PostgresConnector
     cipher: CredentialCipher
+    lab: AiLabService
+    evaluation: EvaluationService
+    experiments: ExperimentService
 
 
 @lru_cache
@@ -118,6 +124,10 @@ def get_ai_services() -> AiServices:
     personas = PersonaRegistry(default_provider=llm.provider_name, default_model=llm.model)
     cipher = CredentialCipher(settings)
     database = PostgresConnector(settings, cipher)
+    math = MathService()
+    evaluation = EvaluationService(personas, math)
+    lab = AiLabService(settings)
+    experiments = ExperimentService(lab=lab, evaluation=evaluation, llms=llms)
     rag = RagService(
         settings=settings,
         storage=core.storage,
@@ -143,13 +153,16 @@ def get_ai_services() -> AiServices:
             llms=llms,
             personas=personas,
             database=database,
-            math=MathService(),
+            math=math,
         ),
         vectors=vectors,
         llms=llms,
         personas=personas,
         database=database,
         cipher=cipher,
+        lab=lab,
+        evaluation=evaluation,
+        experiments=experiments,
     )
 
 
