@@ -2,6 +2,8 @@
 
 Secure, multi-tenant Dynamic Agentic AI Intelligence Platform.
 
+For complete installation, configuration, every application/observability URL, local and GKE operation, full user workflows, testing, troubleshooting, security, rollback, cost control, and cleanup, use the [Complete Project Guide](docs/CompleteProjectGuide.md).
+
 ## Milestone status
 
 Milestone 5 adds hardened containers, a shared kind/GKE Helm release, Jenkins delivery, GKE Autopilot, Artifact Registry, Workload Identity Federation, Secret Manager, Cloud SQL, GCS storage, HPA/security policies, Prometheus/Grafana, ELK/Filebeat/Kibana, and OpenTelemetry while preserving the managed Vertex/Pinecone/Gemini path.
@@ -19,12 +21,12 @@ Milestone 5 adds hardened containers, a shared kind/GKE Helm release, Jenkins de
 
 1. Copy `.env.example` to `.env`, replace `CHANGE_ME`, set `APP_ENV=test` and `AUTH_MODE=test` for the local session UI, and fill the managed AI variables.
 2. Start PostgreSQL: `docker compose up -d postgres`.
-3. Install backend dependencies: `uv sync --project apps/api --all-groups`.
-4. Apply migrations: `uv run --project apps/api alembic -c apps/api/alembic.ini upgrade head`.
-5. Create a local tenant/user: `uv run --project apps/api python -m dynamic_agentic_api.dev_bootstrap` and retain the two printed IDs.
-6. Start the API: `uv run --project apps/api uvicorn dynamic_agentic_api.main:app --reload --port 8000`.
+3. Install backend dependencies: `uv sync --project apps/api --all-groups --locked`.
+4. Apply migrations: `uv run --env-file .env --project apps/api alembic -c apps/api/alembic.ini upgrade head`.
+5. Create a local tenant/user: `uv run --env-file .env --project apps/api python -m dynamic_agentic_api.dev_bootstrap` and retain the two printed IDs.
+6. Start the API: `uv run --env-file .env --project apps/api uvicorn dynamic_agentic_api.main:app --reload --port 8000`.
 7. Install frontend dependencies: `npm ci --prefix apps/web`.
-8. Start the web application: `npm run dev --prefix apps/web`.
+8. Start the web application: `NEXT_PUBLIC_API_BASE_URL=http://localhost:8000 npm run dev --prefix apps/web`.
 9. Open `http://localhost:3000/knowledge-base`, connect with the printed IDs, create a KB, and upload a PDF. Then use `/chat` with the same IDs.
 10. To test the Database Agent, expand **Register PostgreSQL source** in Chat and submit the configured `DATABASE_URL`, schema `demo_business`, and tables `customers,orders,sales`. The credential is encrypted and is never returned to the browser.
 11. Try `What is the percentage increase from 240 to 300?`, `How many orders are in the demo database?`, and a question grounded in the uploaded PDF. AUTO selects the persona and route; selectors allow an approved manual override.
@@ -48,7 +50,7 @@ npm run typecheck --prefix apps/web
 npm run build --prefix apps/web
 ```
 
-Run the credential-gated managed-provider test with `RUN_MANAGED_AI_INTEGRATION=1 uv run --project apps/api pytest -m managed_integration tests/backend/test_managed_ai_integration.py`.
+Run the credential-gated managed-provider test with `RUN_MANAGED_AI_INTEGRATION=1 uv run --env-file .env --project apps/api pytest -m managed_integration tests/backend/test_managed_ai_integration.py`.
 
 OpenAI and Anthropic models appear as unavailable capability targets until their real adapters and server-side credentials are configured. Gemini through Vertex AI remains the production provider; no fake provider response is used outside tests.
 
