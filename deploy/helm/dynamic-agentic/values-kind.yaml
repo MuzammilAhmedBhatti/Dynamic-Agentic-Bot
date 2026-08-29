@@ -1,0 +1,29 @@
+backend:
+  replicas: 1
+  hpa: {enabled: true, minReplicas: 1, maxReplicas: 3, cpuTarget: 70, memoryTarget: 80}
+  pdb: {enabled: false, minAvailable: 1}
+frontend:
+  replicas: 1
+  pdb: {enabled: false, minAvailable: 1}
+config:
+  appEnv: test
+  authMode: test
+  corsOrigins: http://localhost:8080
+  allowedHosts: "localhost,127.0.0.1,dynamic-agentic.local,*.dynamic-agentic.svc.cluster.local"
+  probeHost: dynamic-agentic.local
+  storageBackend: local
+  gcsBucket: ""
+  otelEndpoint: http://otel-collector.observability.svc.cluster.local:4318
+  dataSourceAllowedHosts: host.docker.internal,127.0.0.1
+secrets:
+  provider: kubernetes
+ingress:
+  enabled: true
+  className: nginx
+  host: dynamic-agentic.local
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+networkPolicy:
+  ingressNamespaceLabels:
+    app.kubernetes.io/name: ingress-nginx

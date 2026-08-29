@@ -1,0 +1,129 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "dynamic-agentic.name" . }}-backend
+  labels: {{- include "dynamic-agentic.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.backend.replicas }}
+  revisionHistoryLimit: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate: {maxUnavailable: 0, maxSurge: 1}
+  selector:
+    matchLabels:
+      {{- include "dynamic-agentic.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: backend
+  template:
+    metadata:
+      labels:
+        {{- include "dynamic-agentic.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: backend
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8000"
+        prometheus.io/path: /metrics
+        {{- with .Values.backend.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      serviceAccountName: {{ .Values.backend.serviceAccountName }}
+      automountServiceAccountToken: {{ .Values.backend.automountServiceAccountToken }}
+      terminationGracePeriodSeconds: 45
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+        seccompProfile: {type: RuntimeDefault}
+      initContainers:
+        {{- if .Values.cloudSqlProxy.enabled }}
+        - name: cloud-sql-proxy
+          image: {{ .Values.cloudSqlProxy.image | quote }}
+          restartPolicy: Always
+          args: ["--structured-logs", "--auto-iam-authn=false", "--address=127.0.0.1", "--port=5432", {{ required "cloudSqlProxy.instanceConnectionName is required" .Values.cloudSqlProxy.instanceConnectionName | quote }}]
+          startupProbe:
+            tcpSocket: {port: 5432}
+            failureThreshold: 30
+            periodSeconds: 2
+          resources: {{- toYaml .Values.cloudSqlProxy.resources | nindent 12 }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: {drop: ["ALL"]}
+        {{- end }}
+        - name: migrations
+          image: {{ .Values.backend.image | quote }}
+          imagePullPolicy: {{ .Values.imagePullPolicy }}
+          command: ["python", "-m", "alembic", "-c", "alembic.ini", "upgrade", "head"]
+          envFrom:
+            - configMapRef: {name: {{ include "dynamic-agentic.name" . }}-config}
+          env:
+            {{- if eq .Values.secrets.provider "gcp" }}
+            - {name: DATABASE_URL_FILE, value: /var/run/dynamic-agentic-secrets/database-url}
+            - {name: PINECONE_API_KEY_FILE, value: /var/run/dynamic-agentic-secrets/pinecone-api-key}
+            - {name: DATA_SOURCE_ENCRYPTION_KEY_FILE, value: /var/run/dynamic-agentic-secrets/data-source-encryption-key}
+            {{- else }}
+            - name: DATABASE_URL
+              valueFrom: {secretKeyRef: {name: {{ .Values.secrets.kubernetesSecretName }}, key: DATABASE_URL}}
+            - name: PINECONE_API_KEY
+              valueFrom: {secretKeyRef: {name: {{ .Values.secrets.kubernetesSecretName }}, key: PINECONE_API_KEY}}
+            - name: DATA_SOURCE_ENCRYPTION_KEY
+              valueFrom: {secretKeyRef: {name: {{ .Values.secrets.kubernetesSecretName }}, key: DATA_SOURCE_ENCRYPTION_KEY}}
+            {{- end }}
+          securityContext: &containerSecurity
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: {drop: ["ALL"]}
+          volumeMounts: &backendMounts
+            - {name: tmp, mountPath: /tmp}
+            - {name: data, mountPath: /app/.data}
+            {{- if eq .Values.secrets.provider "gcp" }}
+            - {name: runtime-secrets, mountPath: /var/run/dynamic-agentic-secrets, readOnly: true}
+            {{- end }}
+      containers:
+        - name: backend
+          image: {{ .Values.backend.image | quote }}
+          imagePullPolicy: {{ .Values.imagePullPolicy }}
+          ports: [{name: http, containerPort: 8000}]
+          envFrom:
+            - configMapRef: {name: {{ include "dynamic-agentic.name" . }}-config}
+          env:
+            {{- if eq .Values.secrets.provider "gcp" }}
+            - {name: DATABASE_URL_FILE, value: /var/run/dynamic-agentic-secrets/database-url}
+            - {name: PINECONE_API_KEY_FILE, value: /var/run/dynamic-agentic-secrets/pinecone-api-key}
+            - {name: DATA_SOURCE_ENCRYPTION_KEY_FILE, value: /var/run/dynamic-agentic-secrets/data-source-encryption-key}
+            {{- else }}
+            - name: DATABASE_URL
+              valueFrom: {secretKeyRef: {name: {{ .Values.secrets.kubernetesSecretName }}, key: DATABASE_URL}}
+            - name: PINECONE_API_KEY
+              valueFrom: {secretKeyRef: {name: {{ .Values.secrets.kubernetesSecretName }}, key: PINECONE_API_KEY}}
+            - name: DATA_SOURCE_ENCRYPTION_KEY
+              valueFrom: {secretKeyRef: {name: {{ .Values.secrets.kubernetesSecretName }}, key: DATA_SOURCE_ENCRYPTION_KEY}}
+            {{- end }}
+          startupProbe:
+            httpGet: {path: /health, port: http, httpHeaders: [{name: Host, value: {{ .Values.config.probeHost | quote }} }]}
+            failureThreshold: 30
+            periodSeconds: 2
+          livenessProbe:
+            httpGet: {path: /health, port: http, httpHeaders: [{name: Host, value: {{ .Values.config.probeHost | quote }} }]}
+            periodSeconds: 20
+            timeoutSeconds: 3
+          readinessProbe:
+            httpGet: {path: /api/v1/ready, port: http, httpHeaders: [{name: Host, value: {{ .Values.config.probeHost | quote }} }]}
+            periodSeconds: 10
+            timeoutSeconds: 5
+          lifecycle: {preStop: {exec: {command: ["sh", "-c", "sleep 5"]}}}
+          resources: {{- toYaml .Values.backend.resources | nindent 12 }}
+          securityContext: *containerSecurity
+          volumeMounts: *backendMounts
+      volumes:
+        - {name: tmp, emptyDir: {sizeLimit: 256Mi}}
+        - {name: data, emptyDir: {sizeLimit: 1Gi}}
+        {{- if eq .Values.secrets.provider "gcp" }}
+        - name: runtime-secrets
+          csi:
+            driver: secrets-store-gke.csi.k8s.io
+            readOnly: true
+            volumeAttributes: {secretProviderClass: {{ .Values.secrets.secretProviderClassName | quote }}}
+        {{- end }}

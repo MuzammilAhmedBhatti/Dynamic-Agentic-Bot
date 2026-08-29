@@ -46,12 +46,20 @@ Current milestone: Milestone 4 implemented and under final acceptance; Milestone
 - Connector host allowlist, PDF extension validation, chunk ceiling, experiment resource limits, indirect injection tests, and safe structured completion events.
 - Public-repository hygiene removed the two local source PDFs from Git tracking and explicitly ignores them; local copies remain available to the owner.
 
-## Current limitations and next boundaries
+## Implemented in Milestone 5
 
-- Local object storage and in-process FastAPI background ingestion are development implementations. Cloud Storage, durable Pub/Sub workers, distributed trace fan-out, scanner integration, and production OCR belong to later milestones.
+- Multi-stage non-root backend and Next.js standalone images, CPU-only PyTorch Linux packages, health checks, and image-context secret exclusions.
+- Shared kind/GKE application Helm chart with probes, rolling updates, HPA, PDB, dedicated service accounts, NetworkPolicy, Secret Manager CSI, Cloud SQL proxy, ingress routing, and read-only root filesystems.
+- GCS storage, mounted-secret configuration, application metrics, sanitized OpenTelemetry spans, compact internal Prometheus/Grafana/ELK/Filebeat/Collector chart, and operations dashboard.
+- Jenkins SHA-tagged test/build/scan/push/deploy/rollout/smoke pipeline plus bootstrap, deploy, smoke, rollback, and cleanup runbooks.
+- Selected cloud footprint: `us-central1`, GKE Autopilot, zonal shared-core Cloud SQL PostgreSQL 17, regional registry/private bucket, direct-principal WIF IAM, and three Secret Manager values. No service-account key exists.
+
+## Current limitations and final boundaries
+
+- In-process ingestion/experiments remain bounded but are not a durable queue; production scanner/OCR isolation and HA observability storage remain follow-ups.
 - Live Vertex/Pinecone/Gemini validation requires user-provided GCP ADC/project/location, Pinecone key/index/host, and matching embedding dimension. CI uses safe fakes.
-- Reranking, hybrid retrieval, conversation persistence, tenant-authored persona/provider administration, MongoDB, durable experiment workers, richer curriculum labs, and GKE deployment are not implemented.
+- Reranking, hybrid retrieval, tenant-authored provider administration, MongoDB, and durable experiment workers remain optional future work.
 - Exact region, topology/capacity, RTO/RPO/SLOs, retention, provider data policy, connector networking, and financial dataset remain deferred to their implementation milestones.
 - OpenAI and Anthropic are cataloged as unavailable capability targets; no production adapters or fake responses exist for them. PostgreSQL is the only production structured connector.
 - Production remains Vertex `text-embedding-005` at 768 dimensions in `us-central1`, the existing Pinecone dense index, and Vertex Gemini `gemini-3.5-flash` at `global`.
-- Do not begin Milestone 5 deployment/observability infrastructure without explicit owner approval.
+- No milestone follows Milestone 5. A public production release requires an OIDC issuer/client and TLS domain/certificate policy; until then GKE uses an explicitly private validation profile.

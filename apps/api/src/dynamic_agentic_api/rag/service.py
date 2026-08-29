@@ -14,6 +14,7 @@ from dynamic_agentic_api.db.models import Document, DocumentChunk
 from dynamic_agentic_api.embeddings.providers import EmbeddingProvider
 from dynamic_agentic_api.llm.gateway import EvidenceBlock, LlmProvider, LlmRequest
 from dynamic_agentic_api.storage.service import StorageService
+from dynamic_agentic_api.telemetry import observed_stage
 from dynamic_agentic_api.vector_store.service import VectorStore
 
 UNANSWERABLE = "I cannot answer that from the available knowledge."
@@ -70,16 +71,17 @@ class RagService:
     ) -> RagResult:
         if trace:
             await trace("retrieval_started", "document_retrieval", {})
-        query_result = await self._embeddings.embed_query(question)
-        matches = await self._vectors.query(
-            namespace=str(context.organization_id),
-            vector=query_result.vectors[0],
-            top_k=self._settings.rag_top_k,
-            filters={
-                "tenant_id": str(context.organization_id),
-                "knowledge_base_id": str(knowledge_base_id),
-            },
-        )
+        with observed_stage("Pinecone retrieval"):
+            query_result = await self._embeddings.embed_query(question)
+            matches = await self._vectors.query(
+                namespace=str(context.organization_id),
+                vector=query_result.vectors[0],
+                top_k=self._settings.rag_top_k,
+                filters={
+                    "tenant_id": str(context.organization_id),
+                    "knowledge_base_id": str(knowledge_base_id),
+                },
+            )
         if trace:
             await trace(
                 "retrieval_completed",
@@ -149,14 +151,15 @@ class RagService:
 
         if trace:
             await trace("llm_started", "grounded_generation", {})
-        generated = await (llm or self._llm).generate_grounded_answer(
-            LlmRequest(
-                question=question,
-                evidence=evidence,
-                prompt_version=self.prompt_version,
-                persona_behavior=persona_behavior,
+        with observed_stage("LLM generation"):
+            generated = await (llm or self._llm).generate_grounded_answer(
+                LlmRequest(
+                    question=question,
+                    evidence=evidence,
+                    prompt_version=self.prompt_version,
+                    persona_behavior=persona_behavior,
+                )
             )
-        )
         if trace:
             await trace(
                 "llm_completed",

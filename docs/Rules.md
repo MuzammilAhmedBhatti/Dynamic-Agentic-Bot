@@ -84,9 +84,9 @@ These rules are non-negotiable unless an explicit, documented architecture decis
 4. Genuine ambiguities are recorded with a recommendation and impact; irreversible choices require owner approval.
 5. A verification claim must name the check that ran and its result.
 
-## Current milestone boundary
+## Final milestone boundary
 
-1. Milestone 4 is complete only after production regression, lab/evaluation/security, managed integration, E2E, documentation, and repository publication gates pass.
+1. Milestone 5 is final and is complete only after kind, registry, cloud, identity, secret, database, observability, regression, security, and publication gates pass or are reported honestly as limitations.
 2. AI Lab experiments must remain tenant-scoped, reproducible, resource-bounded, and unable to mutate production KB/vector/data-source state.
 3. Do not create kind, Helm, Jenkins, GKE, or cloud/observability infrastructure during Milestone 4; those belong to unapproved Milestone 5.
 4. Managed AI adapters use real Vertex AI/Pinecone implementations in managed mode; deterministic fakes are test-only and must be impossible to enable in staging/production.
@@ -96,3 +96,7 @@ These rules are non-negotiable unless an explicit, documented architecture decis
 8. Transformer demos are inference-only and local-cache-first by default; never claim large-model training.
 9. Experiment endpoints run only allowlisted algorithms/datasets with bounded rows, epochs, runtime, and concurrency. No arbitrary filesystem, URL, Python, shell, or code execution is permitted.
 10. User input, document text, and database values are untrusted data. Prompts are not authorization or network security boundaries.
+11. Never expose test-session authentication through public GKE ingress. Production ingress requires OIDC plus HTTPS; without them use authenticated port-forward only.
+12. GKE uses WIF principal IAM and Secret Manager CSI; creating or downloading a service-account JSON key is prohibited.
+13. Releases use immutable commit-SHA tags and `helm upgrade --atomic`; readiness failure is failure, with rollback to a recorded Helm revision.
+14. Prometheus, Grafana, Kibana, Elasticsearch, and Logstash remain internal unless an authenticated administrative gateway is approved.

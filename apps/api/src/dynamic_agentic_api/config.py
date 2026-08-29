@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from functools import lru_cache
 from pathlib import Path
-from typing import Literal, Self
+from typing import Any, Literal, Self
 
 from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -21,6 +21,7 @@ class Settings(BaseSettings):
     app_env: Literal["development", "test", "staging", "production"] = "development"
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = "INFO"
     database_url: str = Field(default="", min_length=1)
+    database_url_file: Path | None = None
     cors_origins: str = "http://localhost:3000"
     allowed_hosts: str = "localhost,127.0.0.1,testserver"
     auth_mode: Literal["disabled", "test", "oidc"] = "disabled"
@@ -38,10 +39,12 @@ class Settings(BaseSettings):
     openai_api_key: str | None = None
     anthropic_api_key: str | None = None
     data_source_encryption_key: str | None = None
+    data_source_encryption_key_file: Path | None = None
     database_query_timeout_ms: int = Field(default=5000, ge=250, le=30000)
     database_query_row_limit: int = Field(default=100, ge=1, le=1000)
     data_source_allowed_hosts: str = "localhost,127.0.0.1,postgres"
     pinecone_api_key: str | None = None
+    pinecone_api_key_file: Path | None = None
     pinecone_index: str | None = None
     pinecone_index_host: str | None = None
     external_call_timeout_seconds: float = Field(default=30.0, ge=1.0, le=120.0)
@@ -54,6 +57,8 @@ class Settings(BaseSettings):
     rag_top_k: int = Field(default=6, ge=1, le=20)
     rag_context_max_chars: int = Field(default=18000, ge=1000, le=100000)
     local_storage_root: Path = Path(".data/objects")
+    storage_backend: Literal["local", "gcs"] = "local"
+    gcs_bucket: str | None = None
     lab_artifact_root: Path = Path(".data/lab-artifacts")
     lab_max_dataset_rows: int = Field(default=5000, ge=100, le=50000)
     lab_max_epochs: int = Field(default=30, ge=1, le=100)
@@ -61,6 +66,26 @@ class Settings(BaseSettings):
     lab_max_concurrent_experiments: int = Field(default=2, ge=1, le=8)
     transformer_model: str = "prajjwal1/bert-tiny"
     transformer_allow_download: bool = False
+    otel_exporter_otlp_endpoint: str | None = None
+    otel_service_name: str = "dynamic-agentic-api"
+
+    @model_validator(mode="before")
+    @classmethod
+    def load_mounted_secrets(cls, values: Any) -> Any:
+        if not isinstance(values, dict):
+            return values
+        loaded = dict(values)
+        for target, file_key in (
+            ("database_url", "database_url_file"),
+            ("pinecone_api_key", "pinecone_api_key_file"),
+            ("data_source_encryption_key", "data_source_encryption_key_file"),
+        ):
+            if loaded.get(target):
+                continue
+            path_value = loaded.get(file_key)
+            if path_value:
+                loaded[target] = Path(str(path_value)).read_text(encoding="utf-8").strip()
+        return loaded
 
     @property
     def cors_origin_list(self) -> list[str]:
@@ -117,6 +142,8 @@ class Settings(BaseSettings):
                 raise ValueError("OIDC issuer must use HTTPS outside development")
             if not self.data_source_encryption_key:
                 raise ValueError("DATA_SOURCE_ENCRYPTION_KEY is required outside local/test use")
+            if self.storage_backend != "gcs" or not self.gcs_bucket:
+                raise ValueError("staging and production require a configured GCS storage backend")
         return self
 
 

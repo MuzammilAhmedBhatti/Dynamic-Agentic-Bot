@@ -22,6 +22,7 @@ from dynamic_agentic_api.schemas import (
     LabExperimentCreate,
 )
 from dynamic_agentic_api.services import get_ai_services
+from dynamic_agentic_api.telemetry import observed_stage
 
 router = APIRouter(prefix="/organizations/{organization_id}", tags=["experiments"])
 logger = get_logger()
@@ -80,13 +81,14 @@ async def run_evaluation(
     session: Annotated[AsyncSession, Depends(get_db_session)],
 ) -> ExperimentResponse:
     authorization_service.require_permission(context, "chat.execute")
-    experiment = await get_ai_services().experiments.run_evaluation(
-        session,
-        context,
-        benchmark=payload.benchmark,
-        parameters=payload.parameters,
-        seed=payload.random_seed,
-    )
+    with observed_stage("Evaluation execution"):
+        experiment = await get_ai_services().experiments.run_evaluation(
+            session,
+            context,
+            benchmark=payload.benchmark,
+            parameters=payload.parameters,
+            seed=payload.random_seed,
+        )
     logger.info(
         "evaluation_completed",
         experiment_id=str(experiment.id),

@@ -24,7 +24,11 @@ from dynamic_agentic_api.llm.registry import LlmRegistry, ProviderModel
 from dynamic_agentic_api.math.service import MathService
 from dynamic_agentic_api.personas.service import PersonaRegistry
 from dynamic_agentic_api.rag.service import RagService
-from dynamic_agentic_api.storage.service import LocalStorageService, StorageService
+from dynamic_agentic_api.storage.service import (
+    GcsStorageService,
+    LocalStorageService,
+    StorageService,
+)
 from dynamic_agentic_api.tracing.service import TraceHub, TraceService
 from dynamic_agentic_api.vector_store.service import (
     FakeVectorStore,
@@ -59,8 +63,14 @@ class AiServices:
 def get_core_services() -> CoreServices:
     settings = get_settings()
     traces = TraceService(TraceHub())
+    storage: StorageService
+    if settings.storage_backend == "gcs":
+        assert settings.gcs_bucket
+        storage = GcsStorageService(settings.gcs_bucket)
+    else:
+        storage = LocalStorageService(settings.local_storage_root)
     return CoreServices(
-        storage=LocalStorageService(settings.local_storage_root),
+        storage=storage,
         pdf=PdfProcessor(),
         traces=traces,
     )

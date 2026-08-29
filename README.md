@@ -4,7 +4,7 @@ Secure, multi-tenant Dynamic Agentic AI Intelligence Platform.
 
 ## Milestone status
 
-Milestone 4 adds an isolated tenant-scoped AI Lab, persisted Evaluation Center, and security/resource hardening while preserving the Milestone 3 production assistant. Labs cover safe data preparation, classical ML, a bounded PyTorch MLP, NLP, and optional cached Transformer inference. Evaluations cover RAG/citations, configurations, LLM/prompt versions, persona/router, database, math, and adversarial safety. Deployment infrastructure remains Milestone 5 and is not authorized.
+Milestone 5 adds hardened containers, a shared kind/GKE Helm release, Jenkins delivery, GKE Autopilot, Artifact Registry, Workload Identity Federation, Secret Manager, Cloud SQL, GCS storage, HPA/security policies, Prometheus/Grafana, ELK/Filebeat/Kibana, and OpenTelemetry while preserving the managed Vertex/Pinecone/Gemini path.
 
 ## Prerequisites
 
@@ -52,4 +52,6 @@ Run the credential-gated managed-provider test with `RUN_MANAGED_AI_INTEGRATION=
 
 OpenAI and Anthropic models appear as unavailable capability targets until their real adapters and server-side credentials are configured. Gemini through Vertex AI remains the production provider; no fake provider response is used outside tests.
 
-Do not begin Milestone 5 without explicit approval.
+## Kubernetes deployment
+
+Exact kind, GKE, observability, rollback, and destructive cleanup commands are in [DeploymentRunbook.md](docs/DeploymentRunbook.md). Run `deploy/scripts/kind-deploy.sh "$(git rev-parse --short=12 HEAD)"` for the local shared-chart deployment. Production GKE values require real OIDC and HTTPS configuration; without them the GKE deploy script uses a private, port-forward-only profile that must never be publicly exposed.

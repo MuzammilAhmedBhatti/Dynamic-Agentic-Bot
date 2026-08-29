@@ -66,12 +66,14 @@ Implemented scope:
 
 Exit criteria: production Milestone 3 regression, Milestone 4 suites, managed integrations, tenant/security checks, frontend gates, migration validation, E2E/browser attempt, documentation, and public repository review pass.
 
-## Milestone 5 - Production security, scale, observability, and GKE delivery
+## Milestone 5 - Production security, scale, observability, and GKE delivery — IN PROGRESS
 
-Authorization: NOT APPROVED.
+Authorization: APPROVED on 2026-08-28.
 
-Scope when approved: parser/scanner isolation and production data lifecycle; load/soak/chaos/restore; durable jobs, distributed streaming, pooling and recovery; kind, containers, Helm, Jenkins, Artifact Registry, Secret Manager, GKE, Workload Identity, Kubernetes RBAC/NetworkPolicy/HPA; Prometheus/Grafana, ELK/Filebeat and OpenTelemetry infrastructure; deployment runbooks, promotion and rollback.
+Implemented scope: hardened images; shared kind/GKE Helm release; Artifact Registry SHA images; Jenkins gates; GKE Autopilot; WIF; Secret Manager CSI; Cloud SQL proxy; GCS; HPA/PDB/RBAC/NetworkPolicy/security contexts; Prometheus/Grafana; compact ELK/Filebeat/Kibana; OpenTelemetry; deployment, rollback, smoke, and cleanup runbooks.
+
+Acceptance requires local kind, cloud rollout, observability, production-path smoke/E2E to the extent allowed by configured identity, Milestone 1–4 regression, secret scan, and immutable Git publication. Missing real OIDC blocks public authenticated GKE E2E but must never lead to public test auth.
 
 ## Current stop boundary
 
-Stop after Milestone 4 acceptance and repository publication. Do not provision kind, Helm, Jenkins, GKE, cloud resources, or observability infrastructure without explicit Milestone 5 approval.
+Stop after Milestone 5 validation and repository publication. There is no next milestone.

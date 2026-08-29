@@ -11,6 +11,7 @@ from dynamic_agentic_api.db.models import Experiment
 from dynamic_agentic_api.errors import AppError
 from dynamic_agentic_api.evaluation.service import EvaluationService
 from dynamic_agentic_api.llm.registry import LlmRegistry
+from dynamic_agentic_api.telemetry import observed_stage
 
 
 def _bounded_integer(value: object, *, default: int, minimum: int, maximum: int) -> int:
@@ -68,13 +69,14 @@ class ExperimentService:
         await session.commit()
         started = time.perf_counter()
         try:
-            result = await self._lab.run(
-                lab_type=lab_type,
-                algorithm=algorithm,
-                dataset=dataset,
-                parameters=parameters,
-                seed=seed,
-            )
+            with observed_stage("Experiment execution"):
+                result = await self._lab.run(
+                    lab_type=lab_type,
+                    algorithm=algorithm,
+                    dataset=dataset,
+                    parameters=parameters,
+                    seed=seed,
+                )
             experiment.metrics = result.metrics
             experiment.artifact_metadata = result.artifact_metadata
             experiment.library_versions = result.library_versions

@@ -424,3 +424,9 @@ Verification evidence is in `tests/backend/test_milestone4_ai_lab_evaluation.py`
 Curriculum classifications were reviewed across all 122 topics and normalized to the four authoritative labels: `PRODUCTION`, `AI_LAB`, `EVALUATION`, and `DOCUMENTATION_ONLY`. Statuses distinguish complete, partial, and planned work. CNN/RNN/LSTM/diffusion, full tokenizer comparisons, ROC-AUC, SVM/Naive Bayes, Pandas, FAISS/Chroma, fine-tuning, and large-model training are not claimed as implemented merely because they are curriculum topics.
 
 Milestone 5 retains durable distributed experiment jobs, production object artifacts, full scanner/parser isolation, load/chaos/recovery, Kubernetes/GKE/Helm/Jenkins, Secret Manager delivery, and Prometheus/Grafana/ELK/OpenTelemetry infrastructure.
+
+## 19. Milestone 5 requirement status
+
+Implemented deployment evidence includes shared kind/GKE Helm templates, hardened immutable images, Jenkins gates, Artifact Registry, GKE Autopilot, direct-principal WIF, Secret Manager CSI files, Cloud SQL Auth Proxy, a private GCS adapter, HPA/PDB, least-privilege service accounts, ingress NetworkPolicy, internal observability services, bounded application metrics, and sanitized OTLP traces. Managed AI remains `text-embedding-005`/768/`us-central1`, the existing Pinecone index, and `gemini-3.5-flash`/`global`.
+
+Production identity acceptance is conditional: the chart enforces OIDC for the production profile, while the current GKE validation profile is private and explicitly test-only because no issuer/client/domain was supplied. Exposing that profile publicly is prohibited. Durable queues, production OCR/malware engines, HA Elasticsearch/Prometheus storage, private-only Cloud SQL IP, and a restrictive domain-aware egress policy remain scoped limitations.

@@ -19,6 +19,7 @@ from dynamic_agentic_api.llm.registry import LlmRegistry
 from dynamic_agentic_api.math.service import CalculationRequest, CalculationResult, MathService
 from dynamic_agentic_api.personas.service import PersonaDefinition, PersonaRegistry
 from dynamic_agentic_api.rag.service import UNANSWERABLE, RagResult, RagService
+from dynamic_agentic_api.telemetry import AGENT_USAGE, observed_stage
 from dynamic_agentic_api.tracing.service import TraceService
 
 GRAPH_VERSION = "dynamic-agent-graph-v2"
@@ -147,11 +148,12 @@ class DocumentRagGraph:
 
         async def persona_selector(state: AgentState) -> dict[str, object]:
             await emit("persona_selection_started", "persona_selector")
-            plan = normalize_plan_for_selected_sources(
-                await state["llm"].plan(state["question"]),
-                question=state["question"],
-                has_data_source=state["requested_data_source_id"] is not None,
-            )
+            with observed_stage("PersonaSelector"):
+                plan = normalize_plan_for_selected_sources(
+                    await state["llm"].plan(state["question"]),
+                    question=state["question"],
+                    has_data_source=state["requested_data_source_id"] is not None,
+                )
             requested_persona_id = state["requested_persona_id"]
             persona = (
                 self._personas.get_by_id(requested_persona_id)
@@ -170,6 +172,7 @@ class DocumentRagGraph:
                     "selection_mode": selection_mode,
                 },
             )
+            AGENT_USAGE.labels(kind="persona", name=persona.slug).inc()
             return {"persona": persona, "plan": plan}
 
         async def router(state: AgentState) -> dict[str, object]:
@@ -186,20 +189,23 @@ class DocumentRagGraph:
                 "intent_router",
                 {"route": "+".join(routes), "route_count": len(routes)},
             )
+            for route in routes:
+                AGENT_USAGE.labels(kind="route", name=route).inc()
             return {"routes": routes}
 
         async def document_node(state: AgentState) -> dict[str, object]:
             if "document" not in state["routes"]:
                 return {}
-            result = await self._rag.answer(
-                session=session,
-                context=context,
-                knowledge_base_id=state["knowledge_base_id"],
-                question=state["question"],
-                llm=state["llm"],
-                persona_behavior=state["persona"].system_behavior,
-                trace=emit,
-            )
+            with observed_stage("Document retrieval"):
+                result = await self._rag.answer(
+                    session=session,
+                    context=context,
+                    knowledge_base_id=state["knowledge_base_id"],
+                    question=state["question"],
+                    llm=state["llm"],
+                    persona_behavior=state["persona"].system_behavior,
+                    trace=emit,
+                )
             await emit(
                 "citation_validation_completed",
                 "document_node",
@@ -235,16 +241,17 @@ class DocumentRagGraph:
                     message="No authorized database source is available for this knowledge base.",
                 )
             await emit("database_query_started", "database_node", {"source_type": source.kind})
-            schema = await self._database.discover_schema(source)
-            sql = await state["llm"].generate_sql(
-                SqlGenerationRequest(
-                    state["question"],
-                    source.allowed_schema,
-                    {table.name: table.columns for table in schema},
+            with observed_stage("Database Agent"):
+                schema = await self._database.discover_schema(source)
+                sql = await state["llm"].generate_sql(
+                    SqlGenerationRequest(
+                        state["question"],
+                        source.allowed_schema,
+                        {table.name: table.columns for table in schema},
+                    )
                 )
-            )
-            result = await self._database.execute(source, sql)
-            answer = await state["llm"].explain_database_result(state["question"], result.rows)
+                result = await self._database.execute(source, sql)
+                answer = await state["llm"].explain_database_result(state["question"], result.rows)
             await emit(
                 "database_query_completed",
                 "database_node",
@@ -271,7 +278,8 @@ class DocumentRagGraph:
                 ][:100]
                 request = CalculationRequest(request.operation, values, request.unit)
             await emit("calculation_started", "math_node", {"operation": request.operation})
-            result = self._math.calculate(request)
+            with observed_stage("Math Agent"):
+                result = self._math.calculate(request)
             await emit("calculation_completed", "math_node", {"operation": result.operation})
             return {"calculation": result}
 

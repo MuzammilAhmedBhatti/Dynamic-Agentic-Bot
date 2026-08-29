@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "dynamic-agentic.name" . }}-backend
+  labels: {{- include "dynamic-agentic.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  selector:
+    {{- include "dynamic-agentic.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: backend
+  ports: [{name: http, port: 8000, targetPort: http}]
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "dynamic-agentic.name" . }}-frontend
+  labels: {{- include "dynamic-agentic.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  selector:
+    {{- include "dynamic-agentic.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: frontend
+  ports: [{name: http, port: 3000, targetPort: http}]

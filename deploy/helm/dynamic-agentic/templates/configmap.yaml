@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "dynamic-agentic.name" . }}-config
+  labels: {{- include "dynamic-agentic.labels" . | nindent 4 }}
+data:
+  PYTHONPATH: /app/src
+  APP_ENV: {{ .Values.config.appEnv | quote }}
+  LOG_LEVEL: {{ .Values.config.logLevel | quote }}
+  AUTH_MODE: {{ .Values.config.authMode | quote }}
+  CORS_ORIGINS: {{ .Values.config.corsOrigins | quote }}
+  ALLOWED_HOSTS: {{ .Values.config.allowedHosts | quote }}
+  OIDC_ISSUER_URL: {{ .Values.config.oidcIssuerUrl | quote }}
+  OIDC_CLIENT_ID: {{ .Values.config.oidcClientId | quote }}
+  OIDC_JWKS_URL: {{ .Values.config.oidcJwksUrl | quote }}
+  AI_PROVIDER_MODE: {{ .Values.config.aiProviderMode | quote }}
+  GOOGLE_CLOUD_PROJECT: {{ .Values.config.googleCloudProject | quote }}
+  GOOGLE_CLOUD_LOCATION: {{ .Values.config.googleCloudLocation | quote }}
+  VERTEX_EMBEDDING_LOCATION: {{ .Values.config.vertexEmbeddingLocation | quote }}
+  VERTEX_GEMINI_LOCATION: {{ .Values.config.vertexGeminiLocation | quote }}
+  VERTEX_EMBEDDING_MODEL: {{ .Values.config.vertexEmbeddingModel | quote }}
+  VERTEX_EMBEDDING_DIMENSION: {{ .Values.config.vertexEmbeddingDimension | quote }}
+  VERTEX_GEMINI_MODEL: {{ .Values.config.vertexGeminiModel | quote }}
+  PINECONE_INDEX: {{ .Values.config.pineconeIndex | quote }}
+  PINECONE_INDEX_HOST: {{ .Values.config.pineconeIndexHost | quote }}
+  DATA_SOURCE_ALLOWED_HOSTS: {{ .Values.config.dataSourceAllowedHosts | quote }}
+  STORAGE_BACKEND: {{ .Values.config.storageBackend | quote }}
+  GCS_BUCKET: {{ .Values.config.gcsBucket | quote }}
+  OTEL_EXPORTER_OTLP_ENDPOINT: {{ .Values.config.otelEndpoint | quote }}

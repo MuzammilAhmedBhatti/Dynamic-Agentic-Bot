@@ -512,3 +512,13 @@ The existing shell now renders interactive AI Lab and Evaluation pages. Both reu
 Hardening adds a connector host allowlist, PDF extension validation, document chunk ceiling, experiment row/epoch/runtime/concurrency limits, local-cache-only Transformer default, sanitized failures, and tenant-filtered result access. Structured completion logs include only safe IDs, categories, status and duration. Existing production provider/model, embedding dimension, Pinecone namespace, graph, auth, and page-citation contracts are unchanged.
 
 The trusted router also normalizes model plans against selected sources: an ambiguous model-selected DATABASE route without a registered source falls back to DOCUMENT, while an explicit database request remains a database request and produces the normal source-required error. DATABASE and MATH routes deterministically map to Financial Analyst in AUTO mode; manual persona selection remains authoritative and incompatible manual routes are still denied. This prevents managed-model classification variance from breaking ordinary document questions without granting any additional tool.
+
+## 22. Milestone 5 implementation design
+
+Backend and frontend use locked multi-stage images, numeric non-root identities, explicit ports/health checks, and Kubernetes read-only roots with narrowly scoped `emptyDir` mounts. Next standalone output keeps browser calls same-origin when no public API URL is compiled. FastAPI supports mounted `*_FILE` secrets; local environment values remain backward-compatible.
+
+`storage_backend=local|gcs` selects the existing opaque storage contract or a private GCS implementation. GCS references are never signed/public URLs and remain behind tenant-authorized endpoints. Production validation requires GCS and a bucket.
+
+The backend KSA receives direct least-privilege WIF bindings for Vertex, Cloud SQL connection, three named secrets, and bucket objects. Secret Manager CSI mounts database URL, Pinecone key, and Fernet key as files. Cloud SQL Auth Proxy shares backend pod loopback; no database authorized network is added. Frontend has a separate tokenless KSA. NetworkPolicy defaults ingress closed, then admits controller/frontend/monitoring paths only.
+
+Prometheus labels only bounded route/status/stage/persona values. OpenTelemetry exports sanitized HTTP and named operational spans; prompts, documents, credentials, tenant IDs, and hidden reasoning are not span attributes. Filebeat rejects common credential-bearing log signatures before Logstash. All observability services remain internal ClusterIP services.

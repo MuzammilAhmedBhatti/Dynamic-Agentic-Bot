@@ -1,0 +1,87 @@
+nameOverride: ""
+imagePullPolicy: IfNotPresent
+
+backend:
+  image: dynamic-agentic-backend:dev
+  replicas: 2
+  serviceAccountName: dynamic-agentic-backend
+  automountServiceAccountToken: false
+  podAnnotations: {}
+  resources:
+    requests: {cpu: 250m, memory: 512Mi}
+    limits: {cpu: "1", memory: 2Gi}
+  hpa:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 6
+    cpuTarget: 70
+    memoryTarget: 75
+  pdb:
+    enabled: true
+    minAvailable: 1
+
+frontend:
+  image: dynamic-agentic-frontend:dev
+  replicas: 2
+  serviceAccountName: dynamic-agentic-frontend
+  resources:
+    requests: {cpu: 100m, memory: 128Mi}
+    limits: {cpu: 500m, memory: 512Mi}
+  pdb:
+    enabled: true
+    minAvailable: 1
+
+config:
+  appEnv: staging
+  logLevel: INFO
+  authMode: oidc
+  corsOrigins: https://replace.example
+  allowedHosts: "replace.example,*.dynamic-agentic.svc.cluster.local"
+  probeHost: replace.example
+  oidcIssuerUrl: ""
+  oidcClientId: ""
+  oidcJwksUrl: ""
+  aiProviderMode: managed
+  googleCloudProject: ""
+  googleCloudLocation: us-central1
+  vertexEmbeddingLocation: us-central1
+  vertexGeminiLocation: global
+  vertexEmbeddingModel: text-embedding-005
+  vertexEmbeddingDimension: "768"
+  vertexGeminiModel: gemini-3.5-flash
+  pineconeIndex: dynamic-agentic-rag
+  pineconeIndexHost: ""
+  dataSourceAllowedHosts: 127.0.0.1
+  storageBackend: gcs
+  gcsBucket: ""
+  otelEndpoint: http://otel-collector.observability.svc.cluster.local:4318
+
+secrets:
+  provider: kubernetes
+  kubernetesSecretName: dynamic-agentic-runtime
+  gcpProjectId: ""
+  secretProviderClassName: dynamic-agentic-runtime
+  databaseUrlSecret: dynamic-agentic-database-url
+  pineconeApiKeySecret: dynamic-agentic-pinecone-api-key
+  encryptionKeySecret: dynamic-agentic-data-source-key
+
+cloudSqlProxy:
+  enabled: false
+  image: gcr.io/cloud-sql-connectors/cloud-sql-proxy:2.20.0
+  instanceConnectionName: ""
+  resources:
+    requests: {cpu: 100m, memory: 128Mi}
+    limits: {cpu: 250m, memory: 256Mi}
+
+ingress:
+  enabled: false
+  className: ""
+  host: ""
+  annotations: {}
+  tls: []
+
+networkPolicy:
+  enabled: true
+  ingressNamespaceLabels: {}
+  observabilityNamespaceLabels:
+    kubernetes.io/metadata.name: observability

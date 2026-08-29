@@ -1,0 +1,33 @@
+{{- if .Values.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "dynamic-agentic.name" . }}
+  labels: {{- include "dynamic-agentic.labels" . | nindent 4 }}
+  annotations: {{- toYaml .Values.ingress.annotations | nindent 4 }}
+spec:
+  {{- if .Values.ingress.className }}
+  ingressClassName: {{ .Values.ingress.className }}
+  {{- end }}
+  {{- with .Values.ingress.tls }}
+  tls: {{- toYaml . | nindent 4 }}
+  {{- end }}
+  rules:
+    - {{- if .Values.ingress.host }}
+      host: {{ .Values.ingress.host | quote }}
+      {{- end }}
+      http:
+        paths:
+          - path: /api
+            pathType: Prefix
+            backend: {service: {name: {{ include "dynamic-agentic.name" . }}-backend, port: {number: 8000}}}
+          - path: /health
+            pathType: Exact
+            backend: {service: {name: {{ include "dynamic-agentic.name" . }}-backend, port: {number: 8000}}}
+          - path: /metrics
+            pathType: Exact
+            backend: {service: {name: {{ include "dynamic-agentic.name" . }}-backend, port: {number: 8000}}}
+          - path: /
+            pathType: Prefix
+            backend: {service: {name: {{ include "dynamic-agentic.name" . }}-frontend, port: {number: 3000}}}
+{{- end }}

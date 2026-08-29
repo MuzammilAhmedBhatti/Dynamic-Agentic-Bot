@@ -18,7 +18,7 @@ web:
 backend-check:
 	uv run --project apps/api ruff check apps/api/src tests/backend
 	uv run --project apps/api ruff format --check apps/api/src tests/backend
-	uv run --project apps/api mypy apps/api/src
+	uv run --project apps/api mypy --config-file apps/api/pyproject.toml apps/api/src
 	uv run --project apps/api pytest
 
 frontend-check:

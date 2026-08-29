@@ -1,0 +1,36 @@
+prometheus:
+  image: prom/prometheus:v3.8.1
+  resources:
+    requests: {cpu: 100m, memory: 256Mi}
+    limits: {cpu: 500m, memory: 768Mi}
+grafana:
+  image: grafana/grafana:12.3.0
+  adminSecretName: grafana-admin
+  resources:
+    requests: {cpu: 100m, memory: 192Mi}
+    limits: {cpu: 300m, memory: 512Mi}
+otel:
+  image: otel/opentelemetry-collector-contrib:0.142.0
+  resources:
+    requests: {cpu: 50m, memory: 128Mi}
+    limits: {cpu: 250m, memory: 256Mi}
+elasticsearch:
+  image: docker.elastic.co/elasticsearch/elasticsearch:9.2.1
+  resources:
+    requests: {cpu: 250m, memory: 1Gi}
+    limits: {cpu: "1", memory: 1500Mi}
+logstash:
+  image: docker.elastic.co/logstash/logstash:9.2.1
+  resources:
+    requests: {cpu: 100m, memory: 512Mi}
+    limits: {cpu: 500m, memory: 768Mi}
+kibana:
+  image: docker.elastic.co/kibana/kibana:9.2.1
+  resources:
+    requests: {cpu: 100m, memory: 512Mi}
+    limits: {cpu: 500m, memory: 1Gi}
+filebeat:
+  image: docker.elastic.co/beats/filebeat:9.2.1
+  resources:
+    requests: {cpu: 50m, memory: 128Mi}
+    limits: {cpu: 200m, memory: 256Mi}

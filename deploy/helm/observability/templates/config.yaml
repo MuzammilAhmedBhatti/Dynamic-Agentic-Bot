@@ -1,0 +1,86 @@
+apiVersion: v1
+kind: ConfigMap
+metadata: {name: prometheus-config}
+data:
+  prometheus.yml: |
+    global: {scrape_interval: 15s, evaluation_interval: 15s}
+    scrape_configs:
+      - job_name: dynamic-agentic-backend
+        metrics_path: /metrics
+        static_configs: [{targets: [dynamic-agentic-backend.dynamic-agentic.svc.cluster.local:8000]}]
+      - job_name: prometheus
+        static_configs: [{targets: [localhost:9090]}]
+---
+apiVersion: v1
+kind: ConfigMap
+metadata: {name: grafana-provisioning}
+data:
+  datasources.yaml: |
+    apiVersion: 1
+    datasources:
+      - {name: Prometheus, type: prometheus, access: proxy, url: http://prometheus:9090, isDefault: true}
+  dashboards.yaml: |
+    apiVersion: 1
+    providers:
+      - name: Dynamic Agentic
+        folder: Dynamic Agentic
+        type: file
+        options: {path: /var/lib/grafana/dashboards}
+  dynamic-agentic.json: |
+    {"title":"Dynamic Agentic Operations","uid":"dynamic-agentic-ops","schemaVersion":41,"panels":[
+      {"type":"timeseries","title":"API request rate","targets":[{"expr":"sum(rate(dynamic_agentic_http_requests_total[5m])) by (route)"}],"gridPos":{"h":8,"w":8,"x":0,"y":0}},
+      {"type":"timeseries","title":"API error rate","targets":[{"expr":"sum(rate(dynamic_agentic_http_requests_total{status=~\"5..\"}[5m])) / clamp_min(sum(rate(dynamic_agentic_http_requests_total[5m])), 1)"}],"gridPos":{"h":8,"w":8,"x":8,"y":0}},
+      {"type":"timeseries","title":"p95 API latency","targets":[{"expr":"histogram_quantile(0.95, sum(rate(dynamic_agentic_http_request_duration_seconds_bucket[5m])) by (le,route))"}],"gridPos":{"h":8,"w":8,"x":16,"y":0}},
+      {"type":"timeseries","title":"Agent stage latency","targets":[{"expr":"histogram_quantile(0.95, sum(rate(dynamic_agentic_agent_duration_seconds_bucket[5m])) by (le,stage))"}],"gridPos":{"h":8,"w":12,"x":0,"y":8}},
+      {"type":"timeseries","title":"Pod CPU / memory","targets":[{"expr":"sum(rate(container_cpu_usage_seconds_total{namespace=\"dynamic-agentic\"}[5m])) by (pod)"},{"expr":"sum(container_memory_working_set_bytes{namespace=\"dynamic-agentic\"}) by (pod)"}],"gridPos":{"h":8,"w":12,"x":12,"y":8}},
+      {"type":"timeseries","title":"Ready replicas","targets":[{"expr":"kube_deployment_status_replicas_ready{namespace=\"dynamic-agentic\"}"}],"gridPos":{"h":8,"w":24,"x":0,"y":16}}
+    ]}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata: {name: otel-config}
+data:
+  config.yaml: |
+    receivers:
+      otlp:
+        protocols:
+          grpc: {endpoint: 0.0.0.0:4317}
+          http: {endpoint: 0.0.0.0:4318}
+    processors:
+      memory_limiter: {check_interval: 1s, limit_mib: 180}
+      batch: {}
+    exporters:
+      debug: {verbosity: basic}
+    service:
+      pipelines:
+        traces: {receivers: [otlp], processors: [memory_limiter, batch], exporters: [debug]}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata: {name: logstash-config}
+data:
+  logstash.yml: |
+    api.http.host: 0.0.0.0
+    xpack.monitoring.enabled: false
+  pipeline.conf: |
+    input { beats { port => 5044 } }
+    filter {
+      if [kubernetes][namespace] { mutate { add_field => { "service_namespace" => "%{[kubernetes][namespace]}" } } }
+    }
+    output { elasticsearch { hosts => ["http://elasticsearch:9200"] index => "dynamic-agentic-%{+YYYY.MM.dd}" } }
+---
+apiVersion: v1
+kind: ConfigMap
+metadata: {name: filebeat-config}
+data:
+  filebeat.yml: |
+    filebeat.inputs:
+      - type: filestream
+        id: kubernetes-containers
+        paths: [/var/log/containers/*.log]
+        prospector.scanner.symlinks: true
+        parsers: [{container: {stream: all, format: auto}}]
+    processors:
+      - add_kubernetes_metadata: {host: "${NODE_NAME}", matchers: [{logs_path: {logs_path: /var/log/containers/}}]}
+      - drop_event: {when: {or: [{contains: {message: "PINECONE_API_KEY"}}, {contains: {message: "DATABASE_URL="}}, {contains: {message: "Authorization: Bearer"}}]}}
+    output.logstash: {hosts: ["logstash:5044"]}

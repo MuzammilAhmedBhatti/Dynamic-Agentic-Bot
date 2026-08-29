@@ -1,0 +1,20 @@
+# Safe validation profile used only until a real production OIDC issuer/client and TLS domain exist.
+# It deliberately creates no public Ingress; access is by authenticated kubectl port-forward.
+backend:
+  replicas: 2
+  automountServiceAccountToken: true
+frontend:
+  replicas: 2
+config:
+  appEnv: test
+  authMode: test
+  corsOrigins: http://localhost:8080
+  allowedHosts: "localhost,127.0.0.1,*.dynamic-agentic.svc.cluster.local"
+  probeHost: localhost
+  storageBackend: gcs
+secrets:
+  provider: gcp
+cloudSqlProxy:
+  enabled: true
+ingress:
+  enabled: false

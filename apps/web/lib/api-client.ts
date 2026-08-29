@@ -8,11 +8,16 @@ export interface ApiErrorEnvelope {
   };
 }
 
-const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
+function baseUrl(): string {
+  return (
+    process.env.NEXT_PUBLIC_API_BASE_URL ||
+    (typeof window === "undefined" ? "http://localhost:8000" : window.location.origin)
+  );
+}
 
 export async function apiRequest<T>(path: string, init?: RequestInit): Promise<T> {
   const isFormData = init?.body instanceof FormData;
-  const response = await fetch(new URL(path, baseUrl), {
+  const response = await fetch(new URL(path, baseUrl()), {
     ...init,
     credentials: "include",
     headers: { ...(isFormData ? {} : { "Content-Type": "application/json" }), ...init?.headers },
@@ -25,11 +30,11 @@ export async function apiRequest<T>(path: string, init?: RequestInit): Promise<T
 }
 
 export function websocketUrl(path: string): string {
-  const url = new URL(path, baseUrl);
+  const url = new URL(path, baseUrl());
   url.protocol = url.protocol === "https:" ? "wss:" : "ws:";
   return url.toString();
 }
 
 export function apiUrl(path: string): string {
-  return new URL(path, baseUrl).toString();
+  return new URL(path, baseUrl()).toString();
 }

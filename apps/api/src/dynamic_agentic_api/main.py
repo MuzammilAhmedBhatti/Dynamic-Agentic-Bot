@@ -2,7 +2,9 @@ from __future__ import annotations
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 from starlette.middleware.trustedhost import TrustedHostMiddleware
+from starlette.responses import Response
 
 from dynamic_agentic_api.api.health import health_payload
 from dynamic_agentic_api.api.router import api_router
@@ -11,6 +13,7 @@ from dynamic_agentic_api.errors import install_exception_handlers
 from dynamic_agentic_api.middleware import RequestContextMiddleware
 from dynamic_agentic_api.observability import configure_logging
 from dynamic_agentic_api.schemas import HealthResponse
+from dynamic_agentic_api.telemetry import configure_telemetry
 
 settings = get_settings()
 configure_logging(settings.log_level)
@@ -33,8 +36,14 @@ app.add_middleware(
 app.add_middleware(TrustedHostMiddleware, allowed_hosts=settings.allowed_host_list)
 app.add_middleware(RequestContextMiddleware)
 app.include_router(api_router)
+configure_telemetry(app, settings)
 
 
 @app.get("/health", response_model=HealthResponse, tags=["health"])
 async def root_health() -> HealthResponse:
     return health_payload()
+
+
+@app.get("/metrics", include_in_schema=False)
+async def metrics() -> Response:
+    return Response(generate_latest(), media_type=CONTENT_TYPE_LATEST)

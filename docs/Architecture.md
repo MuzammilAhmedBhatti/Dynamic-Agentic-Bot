@@ -510,4 +510,51 @@ flowchart TD
 
 Security boundaries remain server-derived: experiment organization/user IDs come from the authenticated context, history queries always include `organization_id`, and failures return the existing sanitized envelope. Connector destinations are restricted to `DATA_SOURCE_ALLOWED_HOSTS`; uploaded documents require PDF MIME, `.pdf` extension, signature, size and page bounds; ingestion also caps chunk count. Document/database values remain untrusted evidence, and no lab exposes arbitrary files, URLs, Python, shell, model training code, or production-vector writes.
 
-Application-level observability emits structured completion events with tenant-safe experiment ID, category, algorithm/benchmark, status, and duration. Existing request correlation and graph stage timings cover production operations. Prometheus, Grafana, ELK, OpenTelemetry collectors, Kubernetes, GKE, Helm, and Jenkins remain Milestone 5 work and are not introduced here.
+Application-level observability emits structured completion events with tenant-safe experiment ID, category, algorithm/benchmark, status, and duration. Existing request correlation and graph stage timings cover production operations.
+
+## Milestone 5 deployment architecture
+
+The same application Helm chart targets kind and GKE through values overrides. Pods remain stateless; PostgreSQL, object storage, model APIs, vector search, registry, and secrets remain managed services. GKE uses Autopilot for managed regional capacity and Workload Identity Federation without a fixed oversized node pool.
+
+```mermaid
+flowchart LR
+  Internet --> TLS[HTTPS-ready GKE Ingress]
+  TLS --> Web[Next.js pods]
+  TLS --> API[FastAPI pods]
+  API --> Proxy[Cloud SQL Auth Proxy sidecar]
+  Proxy --> SQL[(Cloud SQL PostgreSQL)]
+  API --> GCS[(Private Cloud Storage)]
+  API --> Pinecone[Pinecone 768-d dense index]
+  API --> Vertex[Vertex embeddings and Gemini]
+  SM[Secret Manager CSI] --> API
+  WIF[Workload Identity Federation] --> SM
+  WIF --> GCS
+  WIF --> Vertex
+```
+
+```mermaid
+flowchart TD
+  Git[Git commit] --> Jenkins[Jenkins gates]
+  Jenkins --> Tests[Lint type tests build scans]
+  Tests --> Images[Non-root immutable images]
+  Images --> AR[Artifact Registry SHA tags]
+  AR --> Helm[Helm upgrade --atomic]
+  Helm --> GKE[GKE Autopilot]
+  GKE --> Rollout[Probes and rollout status]
+  Rollout --> Smoke[Health readiness metrics smoke]
+  Smoke -->|failure| Rollback[Helm rollback]
+```
+
+```mermaid
+flowchart LR
+  App[JSON stdout and OTLP spans] --> FB[Filebeat]
+  FB --> LS[Logstash]
+  LS --> ES[(Elasticsearch)]
+  ES --> KB[Kibana internal only]
+  App --> Prom[Prometheus internal only]
+  Prom --> Grafana[Grafana authenticated internal only]
+  App --> OTel[OpenTelemetry Collector]
+  OTel --> FB
+```
+
+kind exposes ingress only on local ports 8080/8443. GKE production values are HTTPS/OIDC-ready, but the cloud validation overlay creates no public Ingress because no production OIDC issuer, client, domain, or certificate was supplied. The private demo is reachable only through authenticated `kubectl port-forward`; test-session auth is never publicly exposed.

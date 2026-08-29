@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata: {name: filebeat}
+spec:
+  selector: {matchLabels: {app: filebeat}}
+  template:
+    metadata:
+      labels: {app: filebeat}
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/config.yaml") . | sha256sum }}
+    spec:
+      serviceAccountName: filebeat
+      terminationGracePeriodSeconds: 30
+      containers:
+        - name: filebeat
+          image: {{ .Values.filebeat.image }}
+          args: ["-e", "-c", "/etc/filebeat.yml"]
+          env:
+            - name: NODE_NAME
+              valueFrom: {fieldRef: {fieldPath: spec.nodeName}}
+          resources: {{- toYaml .Values.filebeat.resources | nindent 12 }}
+          securityContext: {allowPrivilegeEscalation: false, readOnlyRootFilesystem: true, capabilities: {drop: ["ALL"]}}
+          volumeMounts:
+            - {name: config, mountPath: /etc/filebeat.yml, subPath: filebeat.yml, readOnly: true}
+            - {name: logs, mountPath: /var/log, readOnly: true}
+            - {name: data, mountPath: /usr/share/filebeat/data}
+      volumes:
+        - {name: config, configMap: {name: filebeat-config, defaultMode: 0444}}
+        - {name: logs, hostPath: {path: /var/log}}
+        - {name: data, emptyDir: {sizeLimit: 256Mi}}

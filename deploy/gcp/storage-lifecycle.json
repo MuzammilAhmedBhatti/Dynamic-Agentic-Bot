@@ -1,0 +1,6 @@
+{
+  "rule": [
+    {"action": {"type": "Delete"}, "condition": {"age": 30, "matchesPrefix": ["lab-artifacts/"]}},
+    {"action": {"type": "AbortIncompleteMultipartUpload"}, "condition": {"age": 7}}
+  ]
+}

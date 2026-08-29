@@ -1,0 +1,6 @@
+apiVersion: v2
+name: dynamic-agentic
+description: Hardened stateless Dynamic Agentic Bot runtime for kind and GKE
+type: application
+version: 0.1.0
+appVersion: "0.1.0"

@@ -1,0 +1,10 @@
+{{- range $name, $port := dict "prometheus" 9090 "grafana" 3000 "otel-collector" 4318 "elasticsearch" 9200 "logstash" 5044 "kibana" 5601 }}
+apiVersion: v1
+kind: Service
+metadata: {name: {{ $name }}}
+spec:
+  type: ClusterIP
+  selector: {app: {{ $name }}}
+  ports: [{name: service, port: {{ $port }}, targetPort: {{ $port }}}]
+---
+{{- end }}
