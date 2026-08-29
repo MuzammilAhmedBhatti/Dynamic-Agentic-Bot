@@ -116,7 +116,7 @@ spec:
           args: ["-f", "/usr/share/logstash/pipeline/pipeline.conf"]
           env: [{name: LS_JAVA_OPTS, value: "-Xms256m -Xmx256m"}]
           ports: [{name: beats, containerPort: 5044}]
-          startupProbe: {tcpSocket: {port: beats}, failureThreshold: 60, periodSeconds: 2}
+          startupProbe: {tcpSocket: {port: beats}, failureThreshold: 120, periodSeconds: 2}
           readinessProbe: {tcpSocket: {port: beats}, periodSeconds: 10}
           resources: {{- toYaml .Values.logstash.resources | nindent 12 }}
           securityContext: {allowPrivilegeEscalation: false, capabilities: {drop: ["ALL"]}}

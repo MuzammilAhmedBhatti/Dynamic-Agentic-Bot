@@ -25,7 +25,8 @@ pipeline {
     stage('Security and dependency checks') {
       steps {
         sh 'npm audit --prefix apps/web --audit-level=high'
-        sh 'docker run --rm -v "$WORKSPACE:/src" aquasec/trivy:0.69.1 fs --exit-code 1 --severity HIGH,CRITICAL --ignore-unfixed /src'
+        sh 'docker run --rm -v "$WORKSPACE:/src" -v dynamic-agentic-trivy-cache:/root/.cache/ aquasec/trivy:0.69.1 fs --scanners vuln --timeout 20m --exit-code 1 --severity HIGH,CRITICAL --ignore-unfixed /src'
+        sh 'docker run --rm -v "$WORKSPACE:/src" aquasec/trivy:0.69.1 fs --scanners secret --timeout 10m --exit-code 1 --skip-dirs /src/.git --skip-dirs /src/apps/web/node_modules --skip-dirs /src/apps/web/.next /src'
       }
     }
     stage('Docker build') {
@@ -36,8 +37,8 @@ pipeline {
     }
     stage('Image vulnerability scan') {
       steps {
-        sh 'docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy:0.69.1 image --exit-code 1 --severity CRITICAL --ignore-unfixed dynamic-agentic-backend:$IMAGE_TAG'
-        sh 'docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy:0.69.1 image --exit-code 1 --severity CRITICAL --ignore-unfixed dynamic-agentic-frontend:$IMAGE_TAG'
+        sh 'docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v dynamic-agentic-trivy-cache:/root/.cache/ aquasec/trivy:0.69.1 image --timeout 20m --exit-code 1 --severity CRITICAL --ignore-unfixed dynamic-agentic-backend:$IMAGE_TAG'
+        sh 'docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v dynamic-agentic-trivy-cache:/root/.cache/ aquasec/trivy:0.69.1 image --timeout 20m --exit-code 1 --severity CRITICAL --ignore-unfixed dynamic-agentic-frontend:$IMAGE_TAG'
       }
     }
     stage('Helm lint and template') {

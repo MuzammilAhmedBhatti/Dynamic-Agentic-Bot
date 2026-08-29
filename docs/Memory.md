@@ -1,7 +1,7 @@
 # Project Memory
 
-Last updated: 2026-08-28
-Current milestone: Milestone 4 implemented and under final acceptance; Milestone 5 not authorized
+Last updated: 2026-08-29
+Current milestone: Milestone 5 implemented; private production acceptance passed; public release awaits owner-supplied OIDC/TLS decisions
 
 ## Product and authority
 
@@ -53,6 +53,11 @@ Current milestone: Milestone 4 implemented and under final acceptance; Milestone
 - GCS storage, mounted-secret configuration, application metrics, sanitized OpenTelemetry spans, compact internal Prometheus/Grafana/ELK/Filebeat/Collector chart, and operations dashboard.
 - Jenkins SHA-tagged test/build/scan/push/deploy/rollout/smoke pipeline plus bootstrap, deploy, smoke, rollback, and cleanup runbooks.
 - Selected cloud footprint: `us-central1`, GKE Autopilot, zonal shared-core Cloud SQL PostgreSQL 17, regional registry/private bucket, direct-principal WIF IAM, and three Secret Manager values. No service-account key exists.
+- Artifact Registry contains immutable linux/amd64 backend/frontend tags for the validated application commit. GKE runs those tags with two replicas per application tier and no public Ingress.
+- GKE acceptance verified Secret Manager CSI mounts, Cloud SQL proxy and migrations, GCS writes, Vertex embeddings, Pinecone retrieval, Gemini generation, safe WebSocket trace, HPA metrics, pod replacement, rollback, and tenant denial.
+- The deterministic acceptance PDF produced three pages, three chunks spanning pages 1–3, 910 extracted characters, exact page 1/page 3 citations with PNG previews, and an unanswerable response with zero sources.
+- GKE observability verified two healthy Prometheus targets, application metric series, Grafana health/provisioning, OpenTelemetry trace batches, and Filebeat -> Logstash -> Elasticsearch indexing; all endpoints remain ClusterIP-only.
+- The live security gate identified `cryptography` 46.0.7 advisories; the lock was raised to 50.0.1 and backend regression plus the real managed GKE flow passed afterward.
 
 ## Current limitations and final boundaries
 
@@ -63,3 +68,4 @@ Current milestone: Milestone 4 implemented and under final acceptance; Milestone
 - OpenAI and Anthropic are cataloged as unavailable capability targets; no production adapters or fake responses exist for them. PostgreSQL is the only production structured connector.
 - Production remains Vertex `text-embedding-005` at 768 dimensions in `us-central1`, the existing Pinecone dense index, and Vertex Gemini `gemini-3.5-flash` at `global`.
 - No milestone follows Milestone 5. A public production release requires an OIDC issuer/client and TLS domain/certificate policy; until then GKE uses an explicitly private validation profile.
+- The in-app browser integration failed before navigation with `Cannot redefine property: process`; API-driven E2E and preview-byte verification passed, but final human browser click-through remains an owner acceptance step.

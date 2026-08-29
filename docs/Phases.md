@@ -1,6 +1,6 @@
 # Delivery Milestones
 
-Last updated: 2026-08-28
+Last updated: 2026-08-29
 Rule: execute only the milestone explicitly approved by the owner.
 
 ## Milestone 0 - Discovery and architecture — DONE
@@ -51,7 +51,7 @@ Exit criteria: remaining DAS functional requirements work end to end; curriculum
 
 Implementation delivered: persona AUTO/manual selection; typed multi-route LangGraph; safe PostgreSQL source registration/query; AST validation; deterministic math; provider/model registry and validation; suggestions; unified formatting; expanded safe trace; frontend integration; demo data; security/regression tests.
 
-## Milestone 4 - AI Lab, Evaluation Center, and hardening — IMPLEMENTED, ACCEPTANCE IN PROGRESS
+## Milestone 4 - AI Lab, Evaluation Center, and hardening — DONE
 
 Authorization: APPROVED on 2026-08-28.
 
@@ -66,13 +66,22 @@ Implemented scope:
 
 Exit criteria: production Milestone 3 regression, Milestone 4 suites, managed integrations, tenant/security checks, frontend gates, migration validation, E2E/browser attempt, documentation, and public repository review pass.
 
-## Milestone 5 - Production security, scale, observability, and GKE delivery — IN PROGRESS
+## Milestone 5 - Production security, scale, observability, and GKE delivery — IMPLEMENTED, PRIVATE ACCEPTANCE PASSED
 
 Authorization: APPROVED on 2026-08-28.
 
 Implemented scope: hardened images; shared kind/GKE Helm release; Artifact Registry SHA images; Jenkins gates; GKE Autopilot; WIF; Secret Manager CSI; Cloud SQL proxy; GCS; HPA/PDB/RBAC/NetworkPolicy/security contexts; Prometheus/Grafana; compact ELK/Filebeat/Kibana; OpenTelemetry; deployment, rollback, smoke, and cleanup runbooks.
 
 Acceptance requires local kind, cloud rollout, observability, production-path smoke/E2E to the extent allowed by configured identity, Milestone 1–4 regression, secret scan, and immutable Git publication. Missing real OIDC blocks public authenticated GKE E2E but must never lead to public test auth.
+
+Acceptance evidence (2026-08-29):
+
+- Local kind release, ingress, metrics-server/HPA, pod recovery, bounded load, smoke checks, observability stack, and Helm rollback passed.
+- Private GKE Autopilot release passed with two backend and two frontend replicas, Secret Manager CSI, WIF, Cloud SQL proxy, GCS, internal services, HPA/PDB, NetworkPolicy, RBAC denial checks, pod recovery, and Helm rollback.
+- Deterministic three-page PDF traversed authenticated upload, GCS storage, extraction, page metadata/previews, three page-bound chunks, Vertex embeddings, Pinecone indexing/retrieval, LangGraph, Gemini generation, exact-page citations, safe WebSocket trace, abstention, and cross-tenant denial.
+- Prometheus targets and application series, provisioned Grafana, Filebeat/Logstash/Elasticsearch/Kibana, and OpenTelemetry trace batches were verified in kind and GKE.
+- Backend/frontend regression gates, managed-provider integration, npm audit, Helm/script validation, secret review, and Jenkins CI are recorded in the Milestone 5 handoff.
+- Public release remains intentionally blocked until an approved OIDC issuer/client and TLS domain/certificate policy exist; test authentication is reachable only through authenticated `kubectl port-forward` and no GKE Ingress exists.
 
 ## Current stop boundary
 
