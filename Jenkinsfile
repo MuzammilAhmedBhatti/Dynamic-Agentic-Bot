@@ -25,7 +25,7 @@ pipeline {
     stage('Security and dependency checks') {
       steps {
         sh 'npm audit --prefix apps/web --audit-level=high'
-        sh 'docker run --rm -v "$WORKSPACE:/src" -v dynamic-agentic-trivy-cache:/root/.cache/ aquasec/trivy:0.69.1 fs --scanners vuln --timeout 20m --exit-code 1 --severity HIGH,CRITICAL --ignore-unfixed /src'
+        sh 'docker run --rm -v "$WORKSPACE:/src" -v dynamic-agentic-trivy-cache:/root/.cache/ aquasec/trivy:0.69.1 fs --scanners vuln --timeout 20m --exit-code 1 --severity HIGH,CRITICAL --ignore-unfixed --skip-dirs /src/.git --skip-dirs /src/apps/api/.venv --skip-dirs /src/apps/web/node_modules --skip-dirs /src/apps/web/.next /src'
         sh 'docker run --rm -v "$WORKSPACE:/src" aquasec/trivy:0.69.1 fs --scanners secret --timeout 10m --exit-code 1 --skip-dirs /src/.git --skip-dirs /src/apps/web/node_modules --skip-dirs /src/apps/web/.next /src'
       }
     }
