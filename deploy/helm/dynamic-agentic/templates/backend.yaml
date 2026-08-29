@@ -103,7 +103,7 @@ spec:
             {{- end }}
           startupProbe:
             httpGet: {path: /health, port: http, httpHeaders: [{name: Host, value: {{ .Values.config.probeHost | quote }} }]}
-            failureThreshold: 30
+            failureThreshold: 90
             periodSeconds: 2
           livenessProbe:
             httpGet: {path: /health, port: http, httpHeaders: [{name: Host, value: {{ .Values.config.probeHost | quote }} }]}
