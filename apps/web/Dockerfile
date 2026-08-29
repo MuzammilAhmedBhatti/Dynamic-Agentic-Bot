@@ -1,4 +1,3 @@
-# syntax=docker/dockerfile:1.7
 FROM node:22.22.0-alpine3.23 AS dependencies
 WORKDIR /app
 COPY apps/web/package.json apps/web/package-lock.json ./
