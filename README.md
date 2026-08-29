@@ -2,7 +2,7 @@
 
 Secure, multi-tenant Dynamic Agentic AI Intelligence Platform.
 
-For complete installation, configuration, every application/observability URL, local and GKE operation, full user workflows, testing, troubleshooting, security, rollback, cost control, and cleanup, use the [Complete Project Guide](docs/CompleteProjectGuide.md).
+For complete installation, configuration, every application/observability URL, local and GKE operation, full user workflows, testing, troubleshooting, security, rollback, cost control, and cleanup, use the [Complete Project Guide](docs/CompleteProjectGuide.md). For a code-oriented explanation of how the whole system, LangGraph, AI curriculum, DevOps, security, evaluation, and cloud concepts are implemented, use the [Complete Implementation and Concepts Guide](docs/CompleteImplementationConceptsGuide.md).
 
 ## Milestone status
 

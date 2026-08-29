@@ -5,6 +5,8 @@ Repository: <https://github.com/MuzammilAhmedBhatti/Dynamic-Agentic-Bot>
 
 This is the single operational guide for the project. It explains what the system does, where every user-facing page and administrative service is located, what configuration belongs in which file, how to run the complete application locally, how to use every implemented workflow, how to test it, and how to operate the private GKE deployment.
 
+For the detailed code/concept walkthrough, including LangGraph, RAG internals, all AI curriculum areas, DevOps, security, and design patterns, see [CompleteImplementationConceptsGuide.md](CompleteImplementationConceptsGuide.md).
+
 > Never paste real passwords, API keys, access tokens, database URLs, or service-account JSON into this document, `.env.example`, source code, screenshots, issues, logs, or `NEXT_PUBLIC_*` variables. Real local values belong only in the git-ignored root `.env`. Production secret values belong in Google Secret Manager.
 
 ## 1. What this product is
