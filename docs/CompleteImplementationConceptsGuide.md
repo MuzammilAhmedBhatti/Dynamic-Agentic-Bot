@@ -4,6 +4,8 @@ Last verified: 2026-08-30
 
 This document explains how the entire project was designed and implemented, where each major capability lives in the repository, how the LangGraph agent works, how the numbered AI curriculum is represented, and which software engineering, security, cloud, Kubernetes, DevOps, MLOps, RAG, evaluation, and observability concepts are used.
 
+If you first need plain-language explanations of organization/user IDs and every website page, read [BeginnerStepByStepGuide.md](BeginnerStepByStepGuide.md).
+
 Use this together with:
 
 - [CompleteProjectGuide.md](CompleteProjectGuide.md) for installation, URLs, running, deployment, and troubleshooting.
