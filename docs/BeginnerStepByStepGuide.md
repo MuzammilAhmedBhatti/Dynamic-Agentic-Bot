@@ -495,6 +495,8 @@ This is not arbitrary notebook/code execution. You cannot provide custom Python 
 
 URL: <http://localhost:3000/evaluation>
 
+For a detailed explanation of every benchmark, metric, managed-model call, result, and limitation on this page, see [EvaluationCenterCompleteGuide.md](EvaluationCenterCompleteGuide.md).
+
 Purpose: Measure whether AI and security behavior is correct.
 
 Benchmarks:

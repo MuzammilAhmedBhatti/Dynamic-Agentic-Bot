@@ -666,6 +666,8 @@ Provides optional cached tiny pretrained inference/tokenizer inspection. It does
 
 ## 14. Evaluation Center implementation
 
+For a complete beginner-friendly walkthrough of every benchmark—including which tests call Gemini, which use deterministic fixtures, how every metric is calculated, and what the current page does not test—see [EvaluationCenterCompleteGuide.md](EvaluationCenterCompleteGuide.md).
+
 - Location: `evaluation/service.py`
 - API/orchestration: `experiments/service.py`, `api/experiments.py`
 - Frontend: `components/evaluation-workspace.tsx`

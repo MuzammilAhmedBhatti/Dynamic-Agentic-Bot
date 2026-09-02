@@ -432,6 +432,8 @@ Experiments are tenant-scoped and cannot mutate production knowledge bases or Pi
 
 Open <http://localhost:3000/evaluation>:
 
+For the exact behavior of every benchmark, metric, provider call, fixture, persistence step, and current limitation, read [EvaluationCenterCompleteGuide.md](EvaluationCenterCompleteGuide.md).
+
 1. Connect the session.
 2. Select `rag`, `rag comparison`, `persona router`, `database`, `math`, `security`, `llm`, or `prompts`.
 3. Set Top K where relevant.
