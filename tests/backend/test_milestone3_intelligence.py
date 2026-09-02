@@ -225,6 +225,62 @@ def test_math_contract_operations_and_edge_cases() -> None:
         service.calculate(CalculationRequest("percentage_change", [1]))
 
 
+@pytest.mark.parametrize(
+    ("question", "expected"),
+    [
+        ("What is 12 * 7?", 84),
+        ("Calculate 144 / 12", 12),
+        ("What is 9 x 8?", 72),
+        ("Evaluate (12 + 8) * 3 / 4", 15),
+        ("Calculate sqrt(144) + 2^3", 20),
+        ("What is the square root of 81?", 9),
+        ("Calculate 25 percent of 80", 20),
+        ("Compute 2(3 + 4)", 14),
+        ("Multiply 15 by 6", 90),
+        ("Divide 1,000 by 25", 40),
+    ],
+)
+def test_math_question_parser_supports_common_notation(
+    question: str, expected: float
+) -> None:
+    service = MathService()
+    request = service.parse_question(question)
+    assert request is not None
+    assert request.operation == "expression"
+    assert service.calculate(request).result == expected
+
+
+def test_math_expression_parser_rejects_unsafe_or_unbounded_input() -> None:
+    service = MathService()
+    assert service.parse_question("Tell me about model x 3") is None
+    assert service.parse_question("Calculate __import__('os').system('id')") is None
+    with pytest.raises(AppError) as division:
+        service.calculate(CalculationRequest("expression", [], expression="10 / 0"))
+    assert division.value.code == "DIVISION_BY_ZERO"
+    with pytest.raises(AppError):
+        service.calculate(CalculationRequest("expression", [], expression="2 ** 101"))
+
+
+async def test_standalone_expression_bypasses_llm_planning(
+    client: httpx.AsyncClient,
+) -> None:
+    organization_id, user_id = await seed_tenant()
+    kb_id = await create_kb(client, organization_id, user_id)
+    response = await execute_question(
+        client,
+        organization_id,
+        user_id,
+        kb_id,
+        "Evaluate (18 + 6) / 3 x 5",
+    )
+    assert response.status_code == 200, response.text
+    body = response.json()
+    assert body["route"] == ["math"]
+    assert body["support"] == "grounded"
+    assert body["calculations"][0]["operation"] == "expression"
+    assert body["calculations"][0]["result"] == 40
+
+
 async def test_trace_contains_safe_expanded_events(client: httpx.AsyncClient) -> None:
     organization_id, user_id = await seed_tenant()
     kb_id = await create_kb(client, organization_id, user_id)

@@ -149,11 +149,15 @@ class DocumentRagGraph:
         async def persona_selector(state: AgentState) -> dict[str, object]:
             await emit("persona_selection_started", "persona_selector")
             with observed_stage("PersonaSelector"):
-                plan = normalize_plan_for_selected_sources(
-                    await state["llm"].plan(state["question"]),
-                    question=state["question"],
-                    has_data_source=state["requested_data_source_id"] is not None,
-                )
+                deterministic_math = self._math.parse_question(state["question"])
+                if deterministic_math is not None:
+                    plan = AgentPlan("financial-analyst", ["math"], deterministic_math)
+                else:
+                    plan = normalize_plan_for_selected_sources(
+                        await state["llm"].plan(state["question"]),
+                        question=state["question"],
+                        has_data_source=state["requested_data_source_id"] is not None,
+                    )
             requested_persona_id = state["requested_persona_id"]
             persona = (
                 self._personas.get_by_id(requested_persona_id)
@@ -269,7 +273,7 @@ class DocumentRagGraph:
                     code="INVALID_CALCULATION",
                     message="The calculation inputs could not be determined safely.",
                 )
-            if not request.values and "database_result" in state:
+            if not request.values and request.expression is None and "database_result" in state:
                 values = [
                     float(value)
                     for row in state["database_result"].rows
