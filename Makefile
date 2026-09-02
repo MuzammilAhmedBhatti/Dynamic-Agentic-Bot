@@ -19,7 +19,7 @@ backend-check:
 	uv run --project apps/api ruff check apps/api/src tests/backend
 	uv run --project apps/api ruff format --check apps/api/src tests/backend
 	uv run --project apps/api mypy --config-file apps/api/pyproject.toml apps/api/src
-	uv run --project apps/api pytest
+	APP_ENV=test AUTH_MODE=test AI_PROVIDER_MODE=fake uv run --env-file .env --project apps/api pytest
 
 frontend-check:
 	npm run lint --prefix apps/web

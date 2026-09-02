@@ -73,7 +73,8 @@ class DocumentResponse(BaseModel):
 
 
 class ChatRunCreate(BaseModel):
-    knowledge_base_id: uuid.UUID
+    knowledge_base_id: uuid.UUID | None = None
+    search_all_knowledge_bases: bool = False
     persona_id: uuid.UUID | None = None
     provider: str | None = Field(default=None, max_length=100)
     model: str | None = Field(default=None, max_length=200)

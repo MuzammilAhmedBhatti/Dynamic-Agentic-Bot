@@ -12,6 +12,7 @@ from dynamic_agentic_api.auth.domain import TenantContext
 from dynamic_agentic_api.config import Settings
 from dynamic_agentic_api.db.models import Document, DocumentChunk
 from dynamic_agentic_api.embeddings.providers import EmbeddingProvider
+from dynamic_agentic_api.errors import AppError
 from dynamic_agentic_api.llm.gateway import EvidenceBlock, LlmProvider, LlmRequest
 from dynamic_agentic_api.storage.service import StorageService
 from dynamic_agentic_api.telemetry import observed_stage
@@ -63,14 +64,23 @@ class RagService:
         *,
         session: AsyncSession,
         context: TenantContext,
-        knowledge_base_id: uuid.UUID,
+        knowledge_base_ids: list[uuid.UUID],
         question: str,
         llm: LlmProvider | None = None,
         persona_behavior: str = "",
         trace: Callable[[str, str, dict[str, object]], Awaitable[None]] | None = None,
     ) -> RagResult:
         if trace:
-            await trace("retrieval_started", "document_retrieval", {})
+            await trace(
+                "retrieval_started",
+                "document_retrieval",
+                {"knowledge_base_count": len(knowledge_base_ids)},
+            )
+        if not knowledge_base_ids:
+            return self._unanswerable(retrieval_count=0)
+        knowledge_base_filter: str | list[str] = [str(item) for item in knowledge_base_ids]
+        if len(knowledge_base_filter) == 1:
+            knowledge_base_filter = knowledge_base_filter[0]
         with observed_stage("Pinecone retrieval"):
             query_result = await self._embeddings.embed_query(question)
             matches = await self._vectors.query(
@@ -79,7 +89,7 @@ class RagService:
                 top_k=self._settings.rag_top_k,
                 filters={
                     "tenant_id": str(context.organization_id),
-                    "knowledge_base_id": str(knowledge_base_id),
+                    "knowledge_base_id": knowledge_base_filter,
                 },
             )
         if trace:
@@ -104,9 +114,9 @@ class RagService:
             .where(
                 DocumentChunk.id.in_(chunk_ids),
                 DocumentChunk.organization_id == context.organization_id,
-                DocumentChunk.knowledge_base_id == knowledge_base_id,
+                DocumentChunk.knowledge_base_id.in_(knowledge_base_ids),
                 Document.organization_id == context.organization_id,
-                Document.knowledge_base_id == knowledge_base_id,
+                Document.knowledge_base_id.in_(knowledge_base_ids),
                 Document.status == "ready",
             )
         )
@@ -151,14 +161,42 @@ class RagService:
 
         if trace:
             await trace("llm_started", "grounded_generation", {})
-        with observed_stage("LLM generation"):
-            generated = await (llm or self._llm).generate_grounded_answer(
-                LlmRequest(
-                    question=question,
-                    evidence=evidence,
-                    prompt_version=self.prompt_version,
-                    persona_behavior=persona_behavior,
+        active_llm = llm or self._llm
+        try:
+            with observed_stage("LLM generation"):
+                generated = await active_llm.generate_grounded_answer(
+                    LlmRequest(
+                        question=question,
+                        evidence=evidence,
+                        prompt_version=self.prompt_version,
+                        persona_behavior=persona_behavior,
+                    )
                 )
+        except AppError as exc:
+            if exc.code != "LLM_PROVIDER_UNAVAILABLE":
+                raise
+            fallback_evidence = evidence[:2]
+            if trace:
+                await trace(
+                    "llm_generation_fallback",
+                    "grounded_generation",
+                    {"error_code": exc.code, "evidence_count": len(fallback_evidence)},
+                )
+            return RagResult(
+                answer=(
+                    "The language model is temporarily unavailable. The most relevant "
+                    "authorized document evidence is:\n\n"
+                    + "\n\n".join(
+                        f"{item.document_name}, page {item.page_number}: {item.text[:800]}"
+                        for item in fallback_evidence
+                    )
+                ),
+                sources=[source_by_id[item.chunk_id] for item in fallback_evidence],
+                support="grounded",
+                provider=active_llm.provider_name,
+                model=active_llm.model,
+                prompt_version=self.prompt_version,
+                retrieval_count=len(matches),
             )
         if trace:
             await trace(

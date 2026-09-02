@@ -42,7 +42,15 @@ class VertexEmbeddingProvider:
         self.dimension = dimension
         self._timeout = timeout_seconds
         self._max_attempts = max_attempts
-        self._client = genai.Client(vertexai=True, project=project, location=location)
+        self._client = genai.Client(
+            vertexai=True,
+            project=project,
+            location=location,
+            http_options=types.HttpOptions(
+                timeout=int(timeout_seconds * 1000),
+                retry_options=types.HttpRetryOptions(attempts=1),
+            ),
+        )
 
     async def embed_documents(self, texts: list[str]) -> EmbeddingResult:
         return await self._embed(texts, task_type="RETRIEVAL_DOCUMENT")

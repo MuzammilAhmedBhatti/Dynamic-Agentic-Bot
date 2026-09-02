@@ -24,6 +24,31 @@ async def bootstrap() -> None:
         raise SystemExit("Development bootstrap requires APP_ENV=test and AUTH_MODE=test.")
 
     async with async_session_factory() as session:
+        existing = (
+            await session.execute(
+                select(Organization, User)
+                .join(
+                    OrganizationMembership,
+                    OrganizationMembership.organization_id == Organization.id,
+                )
+                .join(User, User.id == OrganizationMembership.user_id)
+                .where(
+                    Organization.slug.like("local-demo-%"),
+                    Organization.status == "active",
+                    OrganizationMembership.status == "active",
+                    User.identity_provider == "explicit-test-provider",
+                    User.is_active.is_(True),
+                )
+                .order_by(Organization.created_at)
+                .limit(1)
+            )
+        ).first()
+        if existing is not None:
+            organization, user = existing
+            print("Reusing the existing local development organization and user.")
+            print(f"Organization ID: {organization.id}")
+            print(f"Local test user ID: {user.id}")
+            return
         organization = Organization(name="Local Demo", slug=f"local-demo-{uuid.uuid4().hex[:8]}")
         user = User(
             identity_provider="explicit-test-provider",

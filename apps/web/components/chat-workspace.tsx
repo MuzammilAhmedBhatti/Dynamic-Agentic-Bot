@@ -20,7 +20,7 @@ interface CreatedRun { run_id: string; trace_id: string; status: string }
 export function ChatWorkspace() {
   const [organizationId, setOrganizationId] = useState("");
   const [knowledgeBases, setKnowledgeBases] = useState<KnowledgeBase[]>([]);
-  const [knowledgeBaseId, setKnowledgeBaseId] = useState("");
+  const [knowledgeBaseId, setKnowledgeBaseId] = useState("all");
   const [personas, setPersonas] = useState<Persona[]>([]);
   const [personaId, setPersonaId] = useState("auto");
   const [providerModels, setProviderModels] = useState<ProviderModel[]>([]);
@@ -36,7 +36,7 @@ export function ChatWorkspace() {
   const [sourceForm, setSourceForm] = useState({ name: "", connection_url: "", allowed_schema: "demo_business", allowed_tables: "customers,orders,sales" });
 
   const visibleSources = useMemo(
-    () => dataSources.filter((source) => source.knowledge_base_id === knowledgeBaseId && source.is_active),
+    () => dataSources.filter((source) => knowledgeBaseId !== "all" && source.knowledge_base_id === knowledgeBaseId && source.is_active),
     [dataSources, knowledgeBaseId],
   );
 
@@ -50,7 +50,7 @@ export function ChatWorkspace() {
         apiRequest<DataSource[]>(`/api/v1/organizations/${orgId}/data-sources`),
       ]);
       setKnowledgeBases(bases);
-      setKnowledgeBaseId(bases[0]?.id ?? "");
+      setKnowledgeBaseId("all");
       setPersonas(personaRows);
       setProviderModels(models);
       setDataSources(sources);
@@ -62,7 +62,7 @@ export function ChatWorkspace() {
 
   async function registerSource(event: FormEvent) {
     event.preventDefault();
-    if (!organizationId || !knowledgeBaseId) return;
+    if (!organizationId || !knowledgeBaseId || knowledgeBaseId === "all") return;
     setBusy(true);
     try {
       const created = await apiRequest<DataSource>(`/api/v1/organizations/${organizationId}/data-sources`, {
@@ -89,7 +89,7 @@ export function ChatWorkspace() {
 
   async function ask(event: FormEvent) {
     event.preventDefault();
-    if (!organizationId || !knowledgeBaseId) return;
+    if (!organizationId || !knowledgeBases.length) return;
     setBusy(true);
     setResult(null);
     setSelectedSource(null);
@@ -101,7 +101,8 @@ export function ChatWorkspace() {
       const run = await apiRequest<CreatedRun>(`/api/v1/organizations/${organizationId}/chat/runs`, {
         method: "POST",
         body: JSON.stringify({
-          knowledge_base_id: knowledgeBaseId,
+          knowledge_base_id: knowledgeBaseId === "all" ? null : knowledgeBaseId,
+          search_all_knowledge_bases: knowledgeBaseId === "all",
           persona_id: personaId === "auto" ? null : personaId,
           provider: selected?.provider ?? null,
           model: selected?.model ?? null,
@@ -141,15 +142,15 @@ export function ChatWorkspace() {
       <div className="grid gap-5 2xl:grid-cols-[19rem_minmax(24rem,1fr)_24rem]">
         <aside className="panel space-y-4">
           <h3 className="section-title">Intelligence controls</h3>
-          <label className="field-label">Knowledge base<select value={knowledgeBaseId} onChange={(event) => { setKnowledgeBaseId(event.target.value); setDataSourceId(""); }}><option value="">Select…</option>{knowledgeBases.map((kb) => <option key={kb.id} value={kb.id}>{kb.name}</option>)}</select></label>
+          <label className="field-label">Knowledge scope<select value={knowledgeBaseId} onChange={(event) => { setKnowledgeBaseId(event.target.value); setDataSourceId(""); }}><option value="all">AUTO · Search all knowledge bases</option>{knowledgeBases.map((kb) => <option key={kb.id} value={kb.id}>{kb.name}</option>)}</select></label>
           <label className="field-label">Persona<select value={personaId} onChange={(event) => setPersonaId(event.target.value)}><option value="auto">AUTO · Intelligent selection</option>{personas.map((persona) => <option key={persona.id} value={persona.id}>{persona.name}</option>)}</select></label>
           <label className="field-label">Provider / model<select value={providerModel} onChange={(event) => setProviderModel(event.target.value)}><option value="auto">AUTO · Persona default</option>{providerModels.map((item) => <option disabled={!item.available} key={`${item.provider}:${item.model}`} value={`${item.provider}:${item.model}`}>{item.provider} · {item.model}{item.available ? "" : " (unavailable)"}</option>)}</select></label>
-          <label className="field-label">Database source<select value={dataSourceId} onChange={(event) => setDataSourceId(event.target.value)}><option value="">AUTO / none</option>{visibleSources.map((source) => <option key={source.id} value={source.id}>{source.name}</option>)}</select></label>
-          <details><summary className="text-sm font-semibold">Register PostgreSQL source</summary><form className="mt-3 space-y-3" onSubmit={registerSource}><label className="field-label">Name<input required value={sourceForm.name} onChange={(event) => setSourceForm({ ...sourceForm, name: event.target.value })} /></label><label className="field-label">Connection URL<input autoComplete="off" required type="password" value={sourceForm.connection_url} onChange={(event) => setSourceForm({ ...sourceForm, connection_url: event.target.value })} /></label><label className="field-label">Allowed schema<input required value={sourceForm.allowed_schema} onChange={(event) => setSourceForm({ ...sourceForm, allowed_schema: event.target.value })} /></label><label className="field-label">Allowed tables<input required value={sourceForm.allowed_tables} onChange={(event) => setSourceForm({ ...sourceForm, allowed_tables: event.target.value })} /></label><button className="secondary-button" disabled={busy} type="submit">Validate and register</button></form></details>
+          <label className="field-label">Database source<select disabled={knowledgeBaseId === "all"} value={dataSourceId} onChange={(event) => setDataSourceId(event.target.value)}><option value="">AUTO / none</option>{visibleSources.map((source) => <option key={source.id} value={source.id}>{source.name}</option>)}</select></label>
+          <details><summary className="text-sm font-semibold">Register PostgreSQL source</summary>{knowledgeBaseId === "all" ? <p className="mt-3 text-xs text-[var(--muted)]">Select one knowledge base before registering a database source.</p> : <form className="mt-3 space-y-3" onSubmit={registerSource}><label className="field-label">Name<input required value={sourceForm.name} onChange={(event) => setSourceForm({ ...sourceForm, name: event.target.value })} /></label><label className="field-label">Connection URL<input autoComplete="off" required type="password" value={sourceForm.connection_url} onChange={(event) => setSourceForm({ ...sourceForm, connection_url: event.target.value })} /></label><label className="field-label">Allowed schema<input required value={sourceForm.allowed_schema} onChange={(event) => setSourceForm({ ...sourceForm, allowed_schema: event.target.value })} /></label><label className="field-label">Allowed tables<input required value={sourceForm.allowed_tables} onChange={(event) => setSourceForm({ ...sourceForm, allowed_tables: event.target.value })} /></label><button className="secondary-button" disabled={busy} type="submit">Validate and register</button></form>}</details>
           <p className="text-xs text-[var(--muted)]">Credentials are encrypted server-side, never returned, and cleared after registration.</p>
         </aside>
         <div className="space-y-4">
-          <form className="panel space-y-4" onSubmit={ask}><label className="field-label">Question<textarea maxLength={4000} required rows={5} value={question} onChange={(event) => setQuestion(event.target.value)} placeholder="Ask about a document, approved database, or calculation…" /></label><button className="primary-button" disabled={busy || !knowledgeBaseId} type="submit">{busy ? "Running…" : "Ask intelligently"}</button><p className="text-sm text-[var(--muted)]" aria-live="polite">{message}</p></form>
+          <form className="panel space-y-4" onSubmit={ask}><label className="field-label">Question<textarea maxLength={4000} required rows={5} value={question} onChange={(event) => setQuestion(event.target.value)} placeholder="Ask about any uploaded document, approved database, or calculation…" /></label><button className="primary-button" disabled={busy || !knowledgeBases.length} type="submit">{busy ? "Running…" : "Ask intelligently"}</button><p className="text-sm text-[var(--muted)]" aria-live="polite">{message}</p></form>
           {result ? <article className="panel space-y-4"><div className="flex flex-wrap items-center gap-2"><span className={`status status-${result.support}`}>{result.support}</span><span className="text-xs text-[var(--muted)]">{result.persona.name} · {result.route.join(" + ")} · {result.provider} / {result.model}</span></div><p className="whitespace-pre-wrap leading-7">{result.answer}</p>{result.calculations.length ? <section><h3 className="section-title">Calculations</h3>{result.calculations.map((item, index) => <p key={`${item.operation}-${index}`}>{item.operation.replaceAll("_", " ")}: <strong>{item.result}{item.unit ? ` ${item.unit}` : ""}</strong></p>)}</section> : null}{result.database_evidence.length ? <section><h3 className="section-title">Database evidence</h3>{result.database_evidence.map((item) => <div className="citation-card" key={item.source_id}><strong>{item.database_name}</strong><span>{item.tables.join(", ")} · {item.row_count} row(s)</span></div>)}</section> : null}<section className="space-y-2"><h3 className="section-title">Document citations</h3>{result.sources.map((source) => <button className="citation-card" key={source.chunk_id} onClick={() => setSelectedSource(source)} type="button"><strong>{source.document_name}</strong><span>Page {source.page_number}</span></button>)}</section><section className="space-y-2"><h3 className="section-title">Follow-up suggestions</h3>{result.suggestions.map((suggestion) => <button className="citation-card" key={suggestion} onClick={() => setQuestion(suggestion)} type="button">{suggestion}</button>)}</section><p className="text-xs text-[var(--muted)]">Trace {result.trace_id}</p></article> : null}
         </div>
         <aside className="space-y-5">

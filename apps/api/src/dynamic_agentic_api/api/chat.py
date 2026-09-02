@@ -42,18 +42,39 @@ async def create_chat_run(
     session: Annotated[AsyncSession, Depends(get_db_session)],
 ) -> ChatRunCreated:
     authorization_service.require_permission(context, "chat.execute")
-    knowledge_base = await session.scalar(
-        select(KnowledgeBase.id).where(
-            KnowledgeBase.id == payload.knowledge_base_id,
-            KnowledgeBase.organization_id == context.organization_id,
-            KnowledgeBase.status == "active",
+    active_knowledge_bases = list(
+        await session.scalars(
+            select(KnowledgeBase.id)
+            .where(
+                KnowledgeBase.organization_id == context.organization_id,
+                KnowledgeBase.status == "active",
+            )
+            .order_by(KnowledgeBase.created_at)
         )
     )
-    if knowledge_base is None:
+    search_all = payload.search_all_knowledge_bases or payload.knowledge_base_id is None
+    if not active_knowledge_bases:
+        raise AppError(
+            status_code=404,
+            code="KNOWLEDGE_BASE_NOT_FOUND",
+            message="Create a knowledge base before asking a knowledge question.",
+        )
+    if search_all:
+        knowledge_base_id = active_knowledge_bases[0]
+    elif payload.knowledge_base_id not in active_knowledge_bases:
         raise AppError(
             status_code=404,
             code="KNOWLEDGE_BASE_NOT_FOUND",
             message="The knowledge base was not found.",
+        )
+    else:
+        assert payload.knowledge_base_id is not None
+        knowledge_base_id = payload.knowledge_base_id
+    if payload.data_source_id is not None and search_all:
+        raise AppError(
+            status_code=422,
+            code="KNOWLEDGE_BASE_REQUIRED_FOR_DATA_SOURCE",
+            message="Select one knowledge base when using a database source.",
         )
     ai = get_ai_services()
     if payload.persona_id is not None:
@@ -64,7 +85,7 @@ async def create_chat_run(
             select(DataSource.id).where(
                 DataSource.id == payload.data_source_id,
                 DataSource.organization_id == context.organization_id,
-                DataSource.knowledge_base_id == payload.knowledge_base_id,
+                DataSource.knowledge_base_id == knowledge_base_id,
                 DataSource.is_active.is_(True),
             )
         )
@@ -77,7 +98,8 @@ async def create_chat_run(
     run = AgentRun(
         organization_id=context.organization_id,
         user_id=context.user_id,
-        knowledge_base_id=payload.knowledge_base_id,
+        knowledge_base_id=knowledge_base_id,
+        search_all_knowledge_bases=search_all,
         trace_id=str(uuid.uuid4()),
         status="queued",
         graph_version=GRAPH_VERSION,
@@ -120,6 +142,16 @@ async def execute_chat_run(
     ai = get_ai_services()
     run.status = "running"
     await session.commit()
+    knowledge_base_ids = [run.knowledge_base_id]
+    if run.search_all_knowledge_bases:
+        knowledge_base_ids = list(
+            await session.scalars(
+                select(KnowledgeBase.id).where(
+                    KnowledgeBase.organization_id == context.organization_id,
+                    KnowledgeBase.status == "active",
+                )
+            )
+        )
     try:
         result = await ai.graph.run(
             session=session,
@@ -127,6 +159,7 @@ async def execute_chat_run(
             run_id=run.id,
             trace_id=run.trace_id,
             knowledge_base_id=run.knowledge_base_id,
+            knowledge_base_ids=knowledge_base_ids,
             question=payload.question,
             persona_id=run.persona_id,
             data_source_id=run.data_source_id,

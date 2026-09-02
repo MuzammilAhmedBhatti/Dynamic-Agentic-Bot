@@ -352,6 +352,7 @@ class AgentRun(TimestampMixin, Base):
     model: Mapped[str | None] = mapped_column(String(200))
     persona_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True))
     data_source_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True))
+    search_all_knowledge_bases: Mapped[bool] = mapped_column(nullable=False, default=False)
     route: Mapped[str | None] = mapped_column(String(100))
     error_code: Mapped[str | None] = mapped_column(String(100))
 

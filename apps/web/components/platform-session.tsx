@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 
 import { apiRequest } from "@/lib/api-client";
 
@@ -12,6 +12,33 @@ export function PlatformSession({ onConnected }: PlatformSessionProps) {
   const [organizationId, setOrganizationId] = useState("");
   const [userId, setUserId] = useState("");
   const [status, setStatus] = useState("Enter the provisioned organization and local test user IDs.");
+  const onConnectedRef = useRef(onConnected);
+
+  useEffect(() => {
+    onConnectedRef.current = onConnected;
+  }, [onConnected]);
+
+  useEffect(() => {
+    const storedOrganization = window.localStorage.getItem("dynamic_agentic_org") ?? "";
+    const storedUser = window.localStorage.getItem("dynamic_agentic_user") ?? "";
+    if (!storedOrganization || !storedUser) return;
+    queueMicrotask(() => {
+      setOrganizationId(storedOrganization);
+      setUserId(storedUser);
+      setStatus("Restoring the previous local session…");
+      void apiRequest("/api/v1/auth/test-session", {
+        method: "POST",
+        body: JSON.stringify({ user_id: storedUser }),
+      })
+        .then(() => {
+          setStatus("Previous authenticated test session restored.");
+          onConnectedRef.current(storedOrganization);
+        })
+        .catch((error: unknown) => {
+          setStatus(error instanceof Error ? error.message : "Previous session could not be restored.");
+        });
+    });
+  }, []);
 
   async function connect(event: FormEvent) {
     event.preventDefault();

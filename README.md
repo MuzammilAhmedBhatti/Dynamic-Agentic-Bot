@@ -44,7 +44,7 @@ Development API documentation is available at `http://localhost:8000/docs`. Heal
 uv run --project apps/api ruff check apps/api/src tests/backend
 uv run --project apps/api ruff format --check apps/api/src tests/backend
 uv run --project apps/api mypy --config-file apps/api/pyproject.toml apps/api/src
-uv run --project apps/api pytest tests/backend
+APP_ENV=test AUTH_MODE=test AI_PROVIDER_MODE=fake uv run --env-file .env --project apps/api pytest tests/backend
 npm run lint --prefix apps/web
 npm run typecheck --prefix apps/web
 npm run build --prefix apps/web

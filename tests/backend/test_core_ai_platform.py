@@ -18,7 +18,9 @@ from dynamic_agentic_api.db.models import (
     User,
 )
 from dynamic_agentic_api.db.session import async_session_factory
+from dynamic_agentic_api.errors import AppError
 from dynamic_agentic_api.main import app
+from dynamic_agentic_api.services import get_ai_services
 from dynamic_agentic_api.tracing.service import SafeTraceEvent
 from sqlalchemy import select
 from starlette.testclient import TestClient
@@ -264,6 +266,90 @@ async def test_cross_tenant_resources_and_retrieval_are_denied(
     assert answer.status_code == 200
     assert answer.json()["support"] == "unanswerable"
     assert "ORCHID" not in answer.text
+
+
+async def test_auto_scope_searches_all_authorized_knowledge_bases(
+    client: httpx.AsyncClient,
+) -> None:
+    organization_id, user_id = await seed_tenant("Auto Scope")
+    first_kb = await create_kb(client, organization_id, user_id, "General Policies")
+    second_kb = await create_kb(client, organization_id, user_id, "Technical Manuals")
+    await upload_pdf(
+        client,
+        organization_id,
+        user_id,
+        first_kb,
+        "Ordinary office supplies are stored in cabinet four.",
+        "office.pdf",
+    )
+    await upload_pdf(
+        client,
+        organization_id,
+        user_id,
+        second_kb,
+        "The Atlas beacon color is cobalt blue during normal operation.",
+        "atlas-manual.pdf",
+    )
+    created = await client.post(
+        f"/api/v1/organizations/{organization_id}/chat/runs",
+        headers={"X-Test-User-ID": str(user_id)},
+        json={"knowledge_base_id": None, "search_all_knowledge_bases": True},
+    )
+    assert created.status_code == 201, created.text
+    answer = await client.post(
+        f"/api/v1/organizations/{organization_id}/chat/runs/"
+        f"{created.json()['run_id']}/execute",
+        headers={"X-Test-User-ID": str(user_id)},
+        json={"question": "What color is the Atlas beacon?"},
+    )
+    assert answer.status_code == 200, answer.text
+    body = answer.json()
+    assert body["support"] == "grounded"
+    assert body["sources"][0]["document_name"] == "atlas-manual.pdf"
+    assert "cobalt blue" in body["answer"]
+
+
+async def test_document_answer_uses_safe_evidence_fallback_when_llm_is_unavailable(
+    client: httpx.AsyncClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    organization_id, user_id = await seed_tenant("Fallback")
+    kb_id = await create_kb(client, organization_id, user_id, "Continuity")
+    await upload_pdf(
+        client,
+        organization_id,
+        user_id,
+        kb_id,
+        "The continuity recovery target is four hours.",
+        "continuity.pdf",
+    )
+    provider = get_ai_services().llms.resolve(None, None)
+
+    async def unavailable(*_: object, **__: object) -> None:
+        raise AppError(
+            status_code=503,
+            code="LLM_PROVIDER_UNAVAILABLE",
+            message="The language model is temporarily unavailable.",
+            retryable=True,
+        )
+
+    monkeypatch.setattr(provider, "generate_grounded_answer", unavailable)
+    created = await client.post(
+        f"/api/v1/organizations/{organization_id}/chat/runs",
+        headers={"X-Test-User-ID": str(user_id)},
+        json={"knowledge_base_id": kb_id},
+    )
+    answer = await client.post(
+        f"/api/v1/organizations/{organization_id}/chat/runs/"
+        f"{created.json()['run_id']}/execute",
+        headers={"X-Test-User-ID": str(user_id)},
+        json={"question": "What is the continuity recovery target?"},
+    )
+    assert answer.status_code == 200, answer.text
+    body = answer.json()
+    assert body["support"] == "grounded"
+    assert body["sources"][0]["document_name"] == "continuity.pdf"
+    assert "temporarily unavailable" in body["answer"]
+    assert "four hours" in body["answer"]
 
 
 def test_websocket_trace_rejects_unauthenticated_connection() -> None:

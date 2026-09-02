@@ -47,15 +47,15 @@ class Settings(BaseSettings):
     pinecone_api_key_file: Path | None = None
     pinecone_index: str | None = None
     pinecone_index_host: str | None = None
-    external_call_timeout_seconds: float = Field(default=30.0, ge=1.0, le=120.0)
-    external_call_max_attempts: int = Field(default=3, ge=1, le=5)
+    external_call_timeout_seconds: float = Field(default=20.0, ge=1.0, le=120.0)
+    external_call_max_attempts: int = Field(default=2, ge=1, le=5)
     max_pdf_size_mb: int = Field(default=25, ge=1, le=250)
     max_pdf_pages: int = Field(default=200, ge=1, le=2000)
     max_document_chunks: int = Field(default=5000, ge=100, le=50000)
     chunk_size_chars: int = Field(default=1800, ge=200, le=12000)
     chunk_overlap_chars: int = Field(default=240, ge=0, le=2000)
-    rag_top_k: int = Field(default=6, ge=1, le=20)
-    rag_context_max_chars: int = Field(default=18000, ge=1000, le=100000)
+    rag_top_k: int = Field(default=5, ge=1, le=20)
+    rag_context_max_chars: int = Field(default=6000, ge=1000, le=100000)
     local_storage_root: Path = Path(".data/objects")
     storage_backend: Literal["local", "gcs"] = "local"
     gcs_bucket: str | None = None

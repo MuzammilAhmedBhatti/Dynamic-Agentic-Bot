@@ -95,7 +95,7 @@ Local test user ID: <your-real-generated-user-id>
 
 Copy both values into a private note for your local session. Always use the two values printed by the same bootstrap execution.
 
-Running the command again does not recover the same user. It creates another completely separate organization and user pair.
+Running the command again reuses the first active local development organization and user. This keeps the same IDs and prevents an accidental empty tenant from appearing after a restart.
 
 ## 5. Why the website asks for both IDs
 
@@ -328,6 +328,8 @@ Purpose: Ask questions that may need PDF evidence, a registered database, determ
 
 Enter the matching organization/user IDs and connect.
 
+After the first successful connection, the browser remembers these identifiers and automatically refreshes the local test session when the page is reopened. This does not store a password or access token in local storage.
+
 After connecting, the page loads:
 
 - your organization’s KBs;
@@ -337,13 +339,13 @@ After connecting, the page loads:
 
 #### Left panel: Intelligence controls
 
-**Knowledge base**
+**Knowledge scope**
 
-Selects which tenant-owned KB the agent may search. You must create one on the Knowledge Base page first.
+`AUTO · Search all knowledge bases` is the normal default. Pinecone searches every active KB authorized for the current organization in one tenant namespace and returns the best matching chunks. Select one KB only when you deliberately want to restrict document search or use a database source attached to that KB.
 
 **Persona**
 
-- `AUTO`: Gemini returns a structured plan and the backend chooses an allowed persona.
+- `AUTO`: deterministic routing handles obvious document, database, and math requests quickly; Gemini planning is reserved for ambiguous or combined requests.
 - `General Assistant`: evidence-led general behavior.
 - `Financial Analyst`: precise data/math behavior.
 - `Legal Advisor`: document-only informational legal behavior.
@@ -671,6 +673,17 @@ This prints identifiers, not passwords. Keep each organization ID paired with th
 ### “Development bootstrap requires APP_ENV=test and AUTH_MODE=test”
 
 Fix the two values in root `.env` and rerun with `--env-file .env`.
+
+### Uploaded documents disappear after tests or restart
+
+- Never run `docker compose down -v`; the `-v` flag deletes PostgreSQL data.
+- Reuse the IDs printed by bootstrap; current bootstrap reuses the existing local tenant.
+- Normal backend tests now create and migrate a separate database whose name ends in `_test`. Their cleanup cannot truncate the development database.
+- The browser automatically restores the previously connected local test session.
+
+### Gemini is temporarily unavailable
+
+Managed providers can still experience quotas or transient outages. Calls now use bounded retries. If document retrieval succeeds but Gemini generation is temporarily unavailable, Chat returns the most relevant authorized text with validated document/page citations instead of failing the complete run.
 
 ### “password authentication failed for user dynamic_agentic”
 

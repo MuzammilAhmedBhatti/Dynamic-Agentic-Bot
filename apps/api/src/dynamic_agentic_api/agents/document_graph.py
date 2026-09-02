@@ -4,7 +4,7 @@ import re
 import time
 import uuid
 from dataclasses import dataclass
-from typing import NotRequired, TypedDict
+from typing import Literal, NotRequired, TypedDict
 
 from langgraph.graph import END, START, StateGraph
 from sqlalchemy import select
@@ -32,6 +32,45 @@ _EXPLICIT_DATABASE_MARKERS = (
     "orders",
     "sales",
 )
+_DOCUMENT_MARKERS = ("pdf", "document", "policy", "contract", "report", "knowledge")
+_MATH_MARKERS = (
+    "percent",
+    "average",
+    "sum",
+    "ratio",
+    "calculate",
+    "increase",
+    "decrease",
+    "difference",
+)
+_LEGAL_MARKERS = ("contract", "clause", "termination", "legal", "liability")
+_FINANCIAL_MARKERS = ("revenue", "sales", "order", "percentage", "average", "financial")
+
+
+def fast_plan(question: str, *, defer_ambiguous_math: bool = True) -> AgentPlan | None:
+    """Route obvious non-math questions without a slow LLM planning call."""
+    lowered = question.casefold()
+    if (
+        defer_ambiguous_math
+        and any(marker in lowered for marker in _MATH_MARKERS)
+        and re.search(r"\d", question)
+    ):
+        return None
+    database = any(marker in lowered for marker in _EXPLICIT_DATABASE_MARKERS)
+    document = not database or any(marker in lowered for marker in _DOCUMENT_MARKERS)
+    routes: list[Literal["document", "database", "math"]] = []
+    if document:
+        routes.append("document")
+    if database:
+        routes.append("database")
+    persona_slug = (
+        "legal-advisor"
+        if any(marker in lowered for marker in _LEGAL_MARKERS)
+        else "financial-analyst"
+        if database or any(marker in lowered for marker in _FINANCIAL_MARKERS)
+        else "general-assistant"
+    )
+    return AgentPlan(persona_slug, routes or ["document"])
 
 
 def normalize_plan_for_selected_sources(
@@ -57,6 +96,7 @@ class AgentState(TypedDict):
     trace_id: str
     question: str
     knowledge_base_id: uuid.UUID
+    knowledge_base_ids: list[uuid.UUID]
     requested_persona_id: uuid.UUID | None
     requested_data_source_id: uuid.UUID | None
     persona: NotRequired[PersonaDefinition]
@@ -113,6 +153,7 @@ class DocumentRagGraph:
         run_id: uuid.UUID,
         trace_id: str,
         knowledge_base_id: uuid.UUID,
+        knowledge_base_ids: list[uuid.UUID],
         question: str,
         persona_id: uuid.UUID | None = None,
         data_source_id: uuid.UUID | None = None,
@@ -153,8 +194,22 @@ class DocumentRagGraph:
                 if deterministic_math is not None:
                     plan = AgentPlan("financial-analyst", ["math"], deterministic_math)
                 else:
+                    planned = fast_plan(state["question"])
+                    if planned is None:
+                        try:
+                            planned = await state["llm"].plan(state["question"])
+                        except AppError as exc:
+                            if exc.code != "LLM_PROVIDER_UNAVAILABLE":
+                                raise
+                            planned = fast_plan(state["question"], defer_ambiguous_math=False)
+                            assert planned is not None
+                            await emit(
+                                "llm_planning_fallback",
+                                "persona_selector",
+                                {"error_code": exc.code},
+                            )
                     plan = normalize_plan_for_selected_sources(
-                        await state["llm"].plan(state["question"]),
+                        planned,
                         question=state["question"],
                         has_data_source=state["requested_data_source_id"] is not None,
                     )
@@ -204,7 +259,7 @@ class DocumentRagGraph:
                 result = await self._rag.answer(
                     session=session,
                     context=context,
-                    knowledge_base_id=state["knowledge_base_id"],
+                    knowledge_base_ids=state["knowledge_base_ids"],
                     question=state["question"],
                     llm=state["llm"],
                     persona_behavior=state["persona"].system_behavior,
@@ -348,6 +403,7 @@ class DocumentRagGraph:
                     trace_id=trace_id,
                     question=question,
                     knowledge_base_id=knowledge_base_id,
+                    knowledge_base_ids=knowledge_base_ids,
                     requested_persona_id=persona_id,
                     requested_data_source_id=data_source_id,
                 )

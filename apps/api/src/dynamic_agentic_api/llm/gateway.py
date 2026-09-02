@@ -122,7 +122,15 @@ class VertexGeminiProvider:
         self.model = model
         self._timeout = timeout_seconds
         self._max_attempts = max_attempts
-        self._client = genai.Client(vertexai=True, project=project, location=location)
+        self._client = genai.Client(
+            vertexai=True,
+            project=project,
+            location=location,
+            http_options=types.HttpOptions(
+                timeout=int(timeout_seconds * 1000),
+                retry_options=types.HttpRetryOptions(attempts=1),
+            ),
+        )
 
     async def generate_grounded_answer(self, request: LlmRequest) -> LlmResult:
         evidence_text = "\n\n".join(
@@ -224,7 +232,7 @@ class VertexGeminiProvider:
                         config=types.GenerateContentConfig(
                             system_instruction=system,
                             temperature=0,
-                            max_output_tokens=2048,
+                            max_output_tokens=1024,
                             response_mime_type="application/json",
                             response_json_schema=schema.model_json_schema(),
                         ),

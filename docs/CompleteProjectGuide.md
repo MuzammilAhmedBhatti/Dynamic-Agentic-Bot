@@ -298,7 +298,7 @@ uv run --env-file .env --project apps/api alembic -c apps/api/alembic.ini upgrad
 uv run --env-file .env --project apps/api python -m dynamic_agentic_api.dev_bootstrap
 ```
 
-Save the printed `Organization ID` and `Local test user ID`. They are identifiers, not passwords, but keep them out of public screenshots. Every bootstrap invocation creates another tenant/user.
+Save the printed `Organization ID` and `Local test user ID`. They are identifiers, not passwords, but keep them out of public screenshots. Later bootstrap invocations reuse the first active local development tenant/user so restarts do not silently switch to an empty tenant.
 
 Start the API:
 
@@ -343,6 +343,7 @@ Each working page displays two fields:
 3. Select **Connect**.
 
 The API validates the user and creates an HTTP-only, same-site, one-hour test cookie. This route exists only when `APP_ENV=test` and `AUTH_MODE=test`. Never expose it publicly.
+After the first connection, the frontend retains only the two non-secret identifiers and automatically refreshes the local test cookie when a working page is reopened.
 
 ### 8.2 Knowledge Base and PDF ingestion
 
@@ -364,7 +365,7 @@ Default upload limits are 25 MB, 200 pages, and 5,000 chunks. Configure them onl
 Open <http://localhost:3000/chat>:
 
 1. Connect using the same organization and user IDs.
-2. Select the knowledge base containing the ready document.
+2. Keep **AUTO · Search all knowledge bases** for normal use. Pinecone searches all active KBs authorized for that organization and returns the globally best matching chunks. Select one KB only to restrict scope or use its registered database source.
 3. Leave persona and provider/model on **AUTO** for normal use.
 4. Ask an answerable question from page 1.
 5. Ask a question whose evidence is on another page.
@@ -387,6 +388,8 @@ What is the percentage increase from 240 to 300?
 ```
 
 The graph routes deterministic arithmetic to the allowlisted math service rather than relying on model arithmetic. The result includes calculation metadata.
+
+Common notation includes `*`, `/`, `x`, `×`, `÷`, parentheses, powers (`^`), square roots, percentages, and bounded allowlisted functions. Symbolic algebra and calculus are not silently approximated.
 
 ### 8.5 Register and query the demo PostgreSQL source
 
@@ -651,13 +654,15 @@ Run the normal suite:
 make test
 ```
 
+Pytest automatically derives/creates a PostgreSQL database whose name ends in `_test`, applies migrations there, and truncates only that test database. It refuses an explicitly configured `TEST_DATABASE_URL` unless the database name ends in `_test`; development document metadata is never test-cleanup scope.
+
 Equivalent explicit commands:
 
 ```bash
 uv run --project apps/api ruff check apps/api/src tests/backend
 uv run --project apps/api ruff format --check apps/api/src tests/backend
 uv run --project apps/api mypy --config-file apps/api/pyproject.toml apps/api/src
-uv run --project apps/api pytest tests/backend
+APP_ENV=test AUTH_MODE=test AI_PROVIDER_MODE=fake uv run --env-file .env --project apps/api pytest tests/backend
 npm run lint --prefix apps/web
 npm run typecheck --prefix apps/web
 npm run build --prefix apps/web

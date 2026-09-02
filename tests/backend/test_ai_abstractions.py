@@ -42,6 +42,13 @@ async def test_embedding_and_vector_abstractions_enforce_filters() -> None:
         filters={"tenant_id": "tenant-a", "knowledge_base_id": "kb-a"},
     )
     assert [match.id for match in matches] == ["allowed"]
+    all_kb_matches = await store.query(
+        namespace="tenant-a",
+        vector=second.vectors[0],
+        top_k=5,
+        filters={"tenant_id": "tenant-a", "knowledge_base_id": ["kb-a", "kb-b"]},
+    )
+    assert {match.id for match in all_kb_matches} == {"allowed", "other-kb"}
     assert (
         await store.query(
             namespace="tenant-b",

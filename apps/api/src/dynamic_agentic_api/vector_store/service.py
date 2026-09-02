@@ -102,7 +102,10 @@ class PineconeVectorStore:
         top_k: int,
         filters: VectorMetadata,
     ) -> list[VectorMatch]:
-        pinecone_filter: Any = {key: {"$eq": value} for key, value in filters.items()}
+        pinecone_filter: Any = {
+            key: {"$in": value} if isinstance(value, list) else {"$eq": value}
+            for key, value in filters.items()
+        }
         try:
             response = cast(
                 Any,
@@ -165,7 +168,12 @@ class FakeVectorStore:
     ) -> list[VectorMatch]:
         candidates = []
         for record in self.records.get(namespace, {}).values():
-            if all(record.metadata.get(key) == value for key, value in filters.items()):
+            if all(
+                record.metadata.get(key) in value
+                if isinstance(value, list)
+                else record.metadata.get(key) == value
+                for key, value in filters.items()
+            ):
                 candidates.append(
                     VectorMatch(
                         id=record.id,
