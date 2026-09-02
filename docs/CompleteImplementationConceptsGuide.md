@@ -603,6 +603,8 @@ The API returns:
 
 ## 13. AI Lab implementation
 
+For a complete beginner-friendly walkthrough of this page—including what actually runs, which controls each algorithm uses, result persistence, security boundaries, and honest limitations—see [AiLabCompleteGuide.md](AiLabCompleteGuide.md).
+
 - Location: `ai_lab/service.py`
 - Persistence/orchestration: `experiments/service.py`
 - Frontend: `components/ai-lab-workspace.tsx`

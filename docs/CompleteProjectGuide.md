@@ -418,6 +418,8 @@ If the API runs in Kind, the local database host must be `host.docker.internal`,
 
 Open <http://localhost:3000/ai-lab>:
 
+For the exact frontend/backend flow, every control and algorithm, and the distinction between real computation and fixed educational content, read [AiLabCompleteGuide.md](AiLabCompleteGuide.md).
+
 1. Connect the session.
 2. Select a lab and one of its returned allowlisted algorithms.
 3. Choose bounded row count, epochs, and random seed.

@@ -474,6 +474,8 @@ The working persona and agent system is used from Chat and implemented in the ba
 
 URL: <http://localhost:3000/ai-lab>
 
+For a detailed explanation of every field and the exact model execution behind this page, see [AiLabCompleteGuide.md](AiLabCompleteGuide.md).
+
 Purpose: Run small, safe, educational AI/ML experiments without changing production KB/Pinecone state.
 
 After connecting:
